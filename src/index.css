@@ -68,25 +68,80 @@ body {
   padding: 1rem;
 }
 
-/* Header */
-header {
-  text-align: center;
-  padding: 1rem 0 1.25rem;
-  position: relative;
+/* Header Top Bar (バージョン情報とボタングループの綺麗に整列したレイアウト) */
+.header-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.65rem;
+  padding: 0 0.1rem;
 }
 
-.badge-tag {
-  display: inline-flex;
+.version-pill {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.3rem 0.6rem;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  letter-spacing: 0.02em;
+}
+
+.header-action-group {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.header-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.825rem;
+  font-weight: 900;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.header-btn-refresh {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1.5px solid rgba(56, 189, 248, 0.4);
+}
+.header-btn-refresh:active {
+  background: rgba(56, 189, 248, 0.3);
+}
+
+.header-btn-icon {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.update-toast {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  background: rgba(16, 185, 129, 0.95);
+  color: #fff;
+  padding: 0.55rem 1.3rem;
+  border-radius: var(--radius-full);
+  font-size: 0.95rem;
+  font-weight: 900;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  display: flex;
   align-items: center;
   gap: 0.4rem;
-  background: rgba(99, 102, 241, 0.2);
-  border: 1px solid rgba(99, 102, 241, 0.4);
-  padding: 0.35rem 1rem;
-  border-radius: var(--radius-full);
-  font-size: 0.85rem;
-  font-weight: 800;
-  color: #c7d2fe;
-  margin-bottom: 0.5rem;
 }
 
 h1, .main-title {

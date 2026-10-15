@@ -29,21 +29,23 @@ export default function App() {
   const [dbSyncStatus, setDbSyncStatus] = useState("local"); // local, syncing, success, error
   const isInitialLoad = useRef(true);
 
-  // 1. プロファイル (デフォルトを確実にパパ & ママに)
+  // 1. プロファイル (デフォルトおよびクラウド取得時も確実にパパ & ママに変換)
+  const sanitizeProfiles = (rawProfiles) => {
+    if (!rawProfiles) return DEFAULT_PROFILES;
+    const p = { ...rawProfiles };
+    if (!p.husband || p.husband.name === "旦那さん" || !p.husband.name) {
+      p.husband = { ...(p.husband || DEFAULT_PROFILES.husband), name: "パパ" };
+    }
+    if (!p.wife || p.wife.name === "奥さん" || !p.wife.name) {
+      p.wife = { ...(p.wife || DEFAULT_PROFILES.wife), name: "ママ" };
+    }
+    return p;
+  };
+
   const [profiles, setProfiles] = useState(() => {
     try {
       const saved = localStorage.getItem("pair_diet_profiles");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.husband && (parsed.husband.name === "旦那さん" || !parsed.husband.name)) {
-          parsed.husband.name = "パパ";
-        }
-        if (parsed.wife && (parsed.wife.name === "奥さん" || !parsed.wife.name)) {
-          parsed.wife.name = "ママ";
-        }
-        return parsed;
-      }
-      return DEFAULT_PROFILES;
+      return saved ? sanitizeProfiles(JSON.parse(saved)) : DEFAULT_PROFILES;
     } catch {
       return DEFAULT_PROFILES;
     }
@@ -89,12 +91,22 @@ export default function App() {
       try {
         const cloudData = await fetchDietDataFromGitHub();
         if (cloudData) {
-          if (cloudData.profiles) setProfiles(cloudData.profiles);
+          const cleanProfiles = sanitizeProfiles(cloudData.profiles);
+          setProfiles(cleanProfiles);
           if (cloudData.logs && Array.isArray(cloudData.logs)) setLogs(cloudData.logs);
           if (cloudData.reactions && Array.isArray(cloudData.reactions)) setReactions(cloudData.reactions);
+          
+          // クラウド上が古い名前（旦那さん/奥さん）だった場合、即座にパパ/ママで上書き保存
+          if (cloudData.profiles?.husband?.name === "旦那さん" || cloudData.profiles?.wife?.name === "奥さん") {
+            await saveDietDataToGitHub({
+              profiles: cleanProfiles,
+              logs: cloudData.logs || logs,
+              reactions: cloudData.reactions || reactions,
+              updatedAt: new Date().toISOString()
+            });
+          }
           setDbSyncStatus("success");
         } else {
-          // クラウドに初回データがない場合は初期データをPush
           await saveDietDataToGitHub({ profiles, logs, reactions });
           setDbSyncStatus("success");
         }
@@ -224,71 +236,31 @@ export default function App() {
     <div className={`container ${textSize === "large" ? "text-size-large" : ""}`}>
       {/* ヘッダー */}
       <header>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-            <div className="badge-tag" style={{ margin: 0 }}>
-              <Heart size={16} style={{ color: "#f472b6" }} />
-              <span>夫婦ペアダイエット</span>
-            </div>
-            {/* バージョン情報（ビルド日時） */}
-            <span 
-              style={{ 
-                fontSize: "0.75rem", 
-                color: "var(--text-muted)", 
-                background: "rgba(255,255,255,0.06)", 
-                padding: "0.25rem 0.55rem", 
-                borderRadius: "var(--radius-full)",
-                fontWeight: 700,
-                border: "1px solid rgba(255,255,255,0.08)"
-              }}
-            >
-              v{typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "2026.10.15 14:36"}
-            </span>
-          </div>
+        <div className="header-top-bar">
+          {/* 左側：バージョン番号 */}
+          <span className="version-pill">
+            v{typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "2026.10.15 14:45"}
+          </span>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            {/* 文字大切り替えボタン（ヘッダーで即切り替え可能） */}
+          {/* 右側：文字特大、更新、設定の3つのボタンをすっきり整列 */}
+          <div className="header-action-group">
             <button
               onClick={handleToggleTextSize}
+              className="header-btn"
               title="文字サイズ切り替え"
               style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.2rem",
-                padding: "0.3rem 0.65rem",
-                borderRadius: "var(--radius-full)",
-                fontSize: "0.8rem",
-                fontWeight: 900,
                 background: textSize === "large" ? "var(--gradient-primary)" : "rgba(255, 255, 255, 0.08)",
-                color: "#fff",
-                border: "1px solid var(--border-color)",
-                cursor: "pointer"
+                color: "#fff"
               }}
             >
               <span>{textSize === "large" ? "🔍 文字特大" : "文字標準"}</span>
             </button>
 
-            {/* 更新ボタン（タップして即座に最新データを同期＆更新） */}
             <button
               onClick={handleManualSync}
               disabled={isUpdating}
+              className="header-btn header-btn-refresh"
               title="タップして最新データに更新"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.35rem",
-                padding: "0.35rem 0.75rem",
-                borderRadius: "var(--radius-full)",
-                fontSize: "0.85rem",
-                fontWeight: 900,
-                background: isUpdating 
-                  ? "rgba(56, 189, 248, 0.25)" 
-                  : "rgba(56, 189, 248, 0.15)",
-                color: "#38bdf8",
-                border: "1.5px solid rgba(56, 189, 248, 0.4)",
-                cursor: isUpdating ? "wait" : "pointer",
-                transition: "all 0.2s"
-              }}
             >
               <RefreshCw size={14} className={isUpdating ? "animate-spin" : ""} />
               <span>{isUpdating ? "更新中..." : "更新"}</span>
@@ -296,18 +268,8 @@ export default function App() {
 
             <button
               onClick={() => setShowSettings(true)}
-              style={{
-                background: "rgba(255, 255, 255, 0.1)",
-                border: "1px solid var(--border-color)",
-                color: "var(--text-primary)",
-                borderRadius: "50%",
-                width: 36,
-                height: 36,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer"
-              }}
+              className="header-btn header-btn-icon"
+              title="設定"
             >
               <Settings size={18} />
             </button>
@@ -316,26 +278,7 @@ export default function App() {
 
         {/* 更新完了トースト通知 */}
         {showUpdateToast && (
-          <div
-            className="animate-pop"
-            style={{
-              position: "fixed",
-              top: "1rem",
-              left: "50%",
-              transform: "translateX(-50%)",
-              zIndex: 9999,
-              background: "rgba(16, 185, 129, 0.95)",
-              color: "#fff",
-              padding: "0.5rem 1.2rem",
-              borderRadius: "var(--radius-full)",
-              fontSize: "0.9rem",
-              fontWeight: 900,
-              boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.4rem"
-            }}
-          >
+          <div className="update-toast animate-pop">
             <CheckCircle2 size={16} />
             <span>最新データに更新しました！</span>
           </div>
