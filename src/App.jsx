@@ -357,6 +357,7 @@ export default function App() {
         {activeTab === "record" && (
           <RecordForm
             profiles={profiles}
+            logs={logs}
             defaultUser={defaultUser}
             onAddLog={handleAddLog}
           />

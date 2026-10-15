@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { PlusCircle, Calendar, Footprints, Sparkles } from "lucide-react";
+import { PlusCircle, Calendar, Footprints, Sparkles, SlidersHorizontal, Keyboard } from "lucide-react";
+import WheelPicker from "./WheelPicker";
 
-export default function RecordForm({ profiles, onAddLog, defaultUser = "wife" }) {
+export default function RecordForm({ profiles, logs = [], onAddLog, defaultUser = "wife" }) {
   const [user, setUser] = useState(defaultUser);
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [weight, setWeight] = useState("");
@@ -9,7 +10,33 @@ export default function RecordForm({ profiles, onAddLog, defaultUser = "wife" })
   const [waist, setWaist] = useState("");
   const [steps, setSteps] = useState("");
   const [memo, setMemo] = useState("");
+  const [inputMode, setInputMode] = useState("wheel"); // "wheel" (くるくるドラムロール) or "direct" (通常入力)
   const [showSuccess, setShowSuccess] = useState(false);
+
+  // ユーザー切り替え時や初期表示時に、そのユーザーの最新記録を初期値にセット（今の数字からくるくる回せるように）
+  useEffect(() => {
+    const userLogs = logs
+      .filter(l => l.user === user)
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    const latest = userLogs[0];
+    if (latest) {
+      if (latest.weight) setWeight(String(latest.weight));
+      if (latest.bodyFat) setBodyFat(String(latest.bodyFat));
+      if (latest.waist) setWaist(String(latest.waist));
+    } else {
+      // ログがない場合の初期値
+      if (user === "wife") {
+        setWeight("52.8");
+        setBodyFat("23.5");
+        setWaist("66.5");
+      } else {
+        setWeight("68.0");
+        setBodyFat("21.0");
+        setWaist("82.0");
+      }
+    }
+  }, [user, logs]);
 
   useEffect(() => {
     setUser(defaultUser);
@@ -36,9 +63,6 @@ export default function RecordForm({ profiles, onAddLog, defaultUser = "wife" })
 
     onAddLog(newLog);
 
-    setWeight("");
-    setBodyFat("");
-    setWaist("");
     setSteps("");
     setMemo("");
     setShowSuccess(true);
@@ -46,8 +70,8 @@ export default function RecordForm({ profiles, onAddLog, defaultUser = "wife" })
   };
 
   const isHusband = user === "husband";
-  // defaultUser がママの場合はママを左（最初）に表示
   const buttonsOrder = defaultUser === "wife" ? ["wife", "husband"] : ["husband", "wife"];
+  const accentColor = isHusband ? "var(--accent-husband)" : "var(--accent-wife)";
 
   return (
     <div className="card">
@@ -108,47 +132,137 @@ export default function RecordForm({ profiles, onAddLog, defaultUser = "wife" })
           />
         </div>
 
-        {/* 体重・体脂肪率・ウエスト入力 */}
-        <div className="grid-3-inputs" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.45rem" }}>
-          <div className="form-group" style={{ minWidth: 0, marginBottom: "0.75rem" }}>
-            <label style={{ whiteSpace: "nowrap", textAlign: "center" }}>体重 (kg)</label>
-            <input
-              type="number"
-              step="0.1"
-              placeholder="例: 52.8"
-              className="input-style"
-              style={{ padding: "0.75rem 0.35rem", textAlign: "center" }}
-              value={weight}
-              onChange={(e) => setWeight(e.target.value)}
-            />
-          </div>
-
-          <div className="form-group" style={{ minWidth: 0, marginBottom: "0.75rem" }}>
-            <label style={{ whiteSpace: "nowrap", textAlign: "center" }}>体脂肪率 (%)</label>
-            <input
-              type="number"
-              step="0.1"
-              placeholder="例: 23.5"
-              className="input-style"
-              style={{ padding: "0.75rem 0.35rem", textAlign: "center" }}
-              value={bodyFat}
-              onChange={(e) => setBodyFat(e.target.value)}
-            />
-          </div>
-
-          <div className="form-group" style={{ minWidth: 0, marginBottom: "0.75rem" }}>
-            <label style={{ whiteSpace: "nowrap", textAlign: "center" }}>ウエスト (cm)</label>
-            <input
-              type="number"
-              step="0.5"
-              placeholder="例: 66.5"
-              className="input-style"
-              style={{ padding: "0.75rem 0.35rem", textAlign: "center" }}
-              value={waist}
-              onChange={(e) => setWaist(e.target.value)}
-            />
-          </div>
+        {/* 入力モード切り替えバー（くるくるピッカー / 直接数字入力） */}
+        <div style={{ 
+          display: "flex", 
+          justifyContent: "space-between", 
+          alignItems: "center", 
+          marginBottom: "0.65rem",
+          padding: "0 0.2rem"
+        }}>
+          <span style={{ fontSize: "0.92rem", fontWeight: 800, color: "var(--text-secondary)" }}>
+            数値入力（前回値から設定）
+          </span>
+          <button
+            type="button"
+            onClick={() => setInputMode(prev => prev === "wheel" ? "direct" : "wheel")}
+            style={{
+              background: "rgba(255, 255, 255, 0.08)",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              borderRadius: "var(--radius-full)",
+              padding: "0.25rem 0.65rem",
+              fontSize: "0.8rem",
+              fontWeight: 800,
+              color: "#38bdf8",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.3rem"
+            }}
+          >
+            {inputMode === "wheel" ? (
+              <>
+                <Keyboard size={14} />
+                <span>キーボード入力にする</span>
+              </>
+            ) : (
+              <>
+                <SlidersHorizontal size={14} />
+                <span>くるくるピッカーにする</span>
+              </>
+            )}
+          </button>
         </div>
+
+        {/* 体重・体脂肪率・ウエストの「くるくる回せる」ドラムロールピッカー */}
+        {inputMode === "wheel" ? (
+          <div style={{ 
+            display: "grid", 
+            gridTemplateColumns: "repeat(3, minmax(0, 1fr))", 
+            gap: "0.45rem", 
+            marginBottom: "1rem",
+            width: "100%",
+            boxSizing: "border-box"
+          }}>
+            {/* 体重ピッカー (30.0kg 〜 120.0kg) */}
+            <WheelPicker
+              label="体重"
+              unit="kg"
+              value={weight}
+              onChange={setWeight}
+              min={35.0}
+              max={110.0}
+              step={0.1}
+              color={accentColor}
+            />
+
+            {/* 体脂肪率ピッカー (5.0% 〜 55.0%) */}
+            <WheelPicker
+              label="体脂肪率"
+              unit="%"
+              value={bodyFat}
+              onChange={setBodyFat}
+              min={8.0}
+              max={50.0}
+              step={0.1}
+              color="#ec4899"
+            />
+
+            {/* ウエストピッカー (45.0cm 〜 130.0cm) */}
+            <WheelPicker
+              label="ウエスト"
+              unit="cm"
+              value={waist}
+              onChange={setWaist}
+              min={50.0}
+              max={120.0}
+              step={0.5}
+              color="#10b981"
+            />
+          </div>
+        ) : (
+          /* 直接入力モード */
+          <div className="grid-3-inputs" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.45rem", marginBottom: "1rem" }}>
+            <div className="form-group" style={{ minWidth: 0 }}>
+              <label style={{ whiteSpace: "nowrap", textAlign: "center" }}>体重 (kg)</label>
+              <input
+                type="number"
+                step="0.1"
+                placeholder="例: 52.8"
+                className="input-style"
+                style={{ padding: "0.75rem 0.35rem", textAlign: "center" }}
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
+              />
+            </div>
+
+            <div className="form-group" style={{ minWidth: 0 }}>
+              <label style={{ whiteSpace: "nowrap", textAlign: "center" }}>体脂肪率 (%)</label>
+              <input
+                type="number"
+                step="0.1"
+                placeholder="例: 23.5"
+                className="input-style"
+                style={{ padding: "0.75rem 0.35rem", textAlign: "center" }}
+                value={bodyFat}
+                onChange={(e) => setBodyFat(e.target.value)}
+              />
+            </div>
+
+            <div className="form-group" style={{ minWidth: 0 }}>
+              <label style={{ whiteSpace: "nowrap", textAlign: "center" }}>ウエスト (cm)</label>
+              <input
+                type="number"
+                step="0.5"
+                placeholder="例: 66.5"
+                className="input-style"
+                style={{ padding: "0.75rem 0.35rem", textAlign: "center" }}
+                value={waist}
+                onChange={(e) => setWaist(e.target.value)}
+              />
+            </div>
+          </div>
+        )}
 
         {/* 歩数入力 */}
         <div className="form-group">

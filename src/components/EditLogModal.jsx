@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Edit2, Trash2, Calendar, Scale, Footprints, Save, X } from "lucide-react";
+import WheelPicker from "./WheelPicker";
 
 export default function EditLogModal({ log, profiles, onSave, onDelete, onClose }) {
   const [date, setDate] = useState(log ? log.date : "");
@@ -13,6 +14,7 @@ export default function EditLogModal({ log, profiles, onSave, onDelete, onClose 
   if (!log) return null;
 
   const isHusband = user === "husband";
+  const userColor = isHusband ? "var(--accent-husband)" : "var(--accent-wife)";
   const userProfile = profiles[user] || { name: isHusband ? "パパ" : "ママ", avatar: isHusband ? "👨‍💻" : "👩‍🎨" };
 
   const handleSubmit = (e) => {
@@ -135,40 +137,44 @@ export default function EditLogModal({ log, profiles, onSave, onDelete, onClose 
           </div>
 
           {/* 体重・体脂肪率・ウエスト */}
-          <div className="grid-3-inputs" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.45rem" }}>
-            <div className="form-group" style={{ minWidth: 0, marginBottom: "0.75rem" }}>
-              <label style={{ whiteSpace: "nowrap", textAlign: "center" }}>体重 (kg)</label>
-              <input
-                type="number"
-                step="0.1"
-                className="input-style"
-                style={{ padding: "0.75rem 0.35rem", textAlign: "center" }}
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
-              />
-            </div>
-            <div className="form-group" style={{ minWidth: 0, marginBottom: "0.75rem" }}>
-              <label style={{ whiteSpace: "nowrap", textAlign: "center" }}>体脂肪率 (%)</label>
-              <input
-                type="number"
-                step="0.1"
-                className="input-style"
-                style={{ padding: "0.75rem 0.35rem", textAlign: "center" }}
-                value={bodyFat}
-                onChange={(e) => setBodyFat(e.target.value)}
-              />
-            </div>
-            <div className="form-group" style={{ minWidth: 0, marginBottom: "0.75rem" }}>
-              <label style={{ whiteSpace: "nowrap", textAlign: "center" }}>ウエスト (cm)</label>
-              <input
-                type="number"
-                step="0.5"
-                className="input-style"
-                style={{ padding: "0.75rem 0.35rem", textAlign: "center" }}
-                value={waist}
-                onChange={(e) => setWaist(e.target.value)}
-              />
-            </div>
+          <div style={{ 
+            display: "grid", 
+            gridTemplateColumns: "repeat(3, minmax(0, 1fr))", 
+            gap: "0.45rem", 
+            marginBottom: "0.85rem",
+            width: "100%",
+            boxSizing: "border-box"
+          }}>
+            <WheelPicker
+              label="体重"
+              unit="kg"
+              value={weight}
+              onChange={setWeight}
+              min={35.0}
+              max={110.0}
+              step={0.1}
+              color={userColor}
+            />
+            <WheelPicker
+              label="体脂肪率"
+              unit="%"
+              value={bodyFat}
+              onChange={setBodyFat}
+              min={8.0}
+              max={50.0}
+              step={0.1}
+              color="#ec4899"
+            />
+            <WheelPicker
+              label="ウエスト"
+              unit="cm"
+              value={waist}
+              onChange={setWaist}
+              min={50.0}
+              max={120.0}
+              step={0.5}
+              color="#10b981"
+            />
           </div>
 
           {/* 歩数 */}
