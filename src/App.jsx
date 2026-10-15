@@ -257,9 +257,9 @@ export default function App() {
           </div>
         </div>
 
-        <h1>ふたりでダイエット & 日本一周</h1>
+        <h1 className="main-title">ふたりでダイエット</h1>
         <p className="subtitle">
-          毎日の体重・体脂肪・ウエストを共有＆歩数ですごろく日本一周！
+          毎日の体重・体脂肪・ウエスト & 歩数で日本一周！
         </p>
       </header>
 

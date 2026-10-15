@@ -89,13 +89,15 @@ header {
   margin-bottom: 0.5rem;
 }
 
-h1 {
-  font-size: 1.85rem;
+h1, .main-title {
+  font-size: 1.5rem;
   font-weight: 900;
   background: var(--gradient-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  margin-top: 0.1rem;
 }
 
 .subtitle {
@@ -292,8 +294,9 @@ h1 {
   font-size: 19px !important;
 }
 
-.text-size-large h1 {
-  font-size: 2.2rem !important;
+.text-size-large h1, .text-size-large .main-title {
+  font-size: 1.65rem !important;
+  white-space: nowrap !important;
 }
 
 .text-size-large .subtitle {
