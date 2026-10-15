@@ -18,6 +18,7 @@ export default function DietChart({ logs, profiles, onSelectLogToEdit }) {
   const [timeRange, setTimeRange] = useState("1m"); // 1w, 1m, 3m, 6m, 1y, 2y, 3y, all
   const [selectedUser, setSelectedUser] = useState("both"); // "both", "wife", "husband"
   const [inspectedPoint, setInspectedPoint] = useState(null);
+  const [expandedId, setExpandedId] = useState(null);
 
   const metricConfig = {
     weight: { label: "体重", unit: "kg", color: "#38bdf8" },
@@ -496,41 +497,118 @@ export default function DietChart({ logs, profiles, onSelectLogToEdit }) {
 
       {/* 履歴リスト */}
       <div style={{ marginTop: "1.2rem" }}>
-        <div style={{ fontSize: "1rem", fontWeight: 800, color: "var(--text-secondary)", marginBottom: "0.5rem" }}>
-          期間内の記録 ({filteredLogs.length}件)
+        <div style={{ fontSize: "1rem", fontWeight: 800, color: "var(--text-secondary)", marginBottom: "0.6rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span>期間内の記録 ({filteredLogs.length}件)</span>
+          <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>タップで編集・メモ確認</span>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-          {filteredLogs.slice(-10).reverse().map(l => {
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.55rem" }}>
+          {filteredLogs.slice(-15).reverse().map(l => {
             const isHusband = l.user === "husband";
+            const userColor = isHusband ? "#38bdf8" : "#f472b6";
+            const userName = isHusband ? profiles.husband.name : profiles.wife.name;
+            const isMemoOpen = expandedId === l.id;
+
             return (
               <div
                 key={l.id}
-                onClick={() => onSelectLogToEdit && onSelectLogToEdit(l)}
-                title="タップして編集"
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  padding: "0.85rem 0.95rem",
-                  background: "rgba(255,255,255,0.06)",
+                  background: "rgba(255,255,255,0.05)",
                   borderRadius: "var(--radius-md)",
-                  fontSize: "1rem",
-                  cursor: "pointer",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  transition: "background 0.15s"
+                  border: `1px solid ${isMemoOpen ? userColor : "rgba(255,255,255,0.08)"}`,
+                  overflow: "hidden",
+                  transition: "all 0.15s ease"
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-                  <span style={{ fontSize: "1.4rem" }}>{isHusband ? "👨‍💻" : "👩‍🎨"}</span>
-                  <span style={{ fontWeight: 900, color: "#fff", fontSize: "1.05rem" }}>{l.date}</span>
-                  {l.memo && <span style={{ color: "var(--text-secondary)", fontWeight: 600, fontSize: "0.88rem" }}>- {l.memo}</span>}
+                {/* 1行目: アイコン・日付・名前・体重数値・編集ボタン */}
+                <div 
+                  onClick={() => onSelectLogToEdit && onSelectLogToEdit(l)}
+                  title="タップして編集"
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "0.75rem 0.85rem",
+                    cursor: "pointer",
+                    gap: "0.5rem"
+                  }}
+                >
+                  {/* 左側: アイコン & 名前 & 日付 */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.45rem", minWidth: 0, flexShrink: 0 }}>
+                    <span style={{ fontSize: "1.35rem" }}>{isHusband ? "👨‍💻" : "👩‍🎨"}</span>
+                    <span style={{ fontWeight: 900, color: "#fff", fontSize: "0.95rem", whiteSpace: "nowrap" }}>
+                      {l.date ? l.date.replace(/^\d{4}-/, "") : ""}
+                    </span>
+                    <span style={{ 
+                      fontSize: "0.75rem", 
+                      padding: "0.1rem 0.45rem", 
+                      borderRadius: "var(--radius-full)", 
+                      background: isHusband ? "rgba(56, 189, 248, 0.2)" : "rgba(244, 114, 182, 0.2)",
+                      color: userColor,
+                      fontWeight: 800,
+                      whiteSpace: "nowrap"
+                    }}>
+                      {userName}
+                    </span>
+                  </div>
+
+                  {/* 右側: 体重・体脂肪率・ウエスト・編集ボタン */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.55rem", fontWeight: 900, flexShrink: 0 }}>
+                    {l.weight && (
+                      <span style={{ color: userColor, fontSize: "1.15rem", whiteSpace: "nowrap" }}>
+                        {l.weight}kg
+                      </span>
+                    )}
+                    {l.bodyFat && (
+                      <span style={{ color: "var(--text-secondary)", fontSize: "0.85rem", whiteSpace: "nowrap" }}>
+                        {l.bodyFat}%
+                      </span>
+                    )}
+                    {l.waist && (
+                      <span style={{ color: "var(--text-muted)", fontSize: "0.85rem", whiteSpace: "nowrap" }}>
+                        {l.waist}cm
+                      </span>
+                    )}
+                    <Edit3 size={15} style={{ color: "var(--text-muted)", marginLeft: "0.1rem" }} />
+                  </div>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.7rem", fontWeight: 900 }}>
-                  {l.weight && <span style={{ color: isHusband ? "#38bdf8" : "#f472b6", fontSize: "1.15rem" }}>{l.weight}kg</span>}
-                  {l.bodyFat && <span style={{ color: "var(--text-secondary)" }}>{l.bodyFat}%</span>}
-                  {l.waist && <span style={{ color: "var(--text-muted)" }}>{l.waist}cm</span>}
-                  <Edit3 size={15} style={{ color: "var(--text-muted)", marginLeft: "0.2rem" }} />
-                </div>
+
+                {/* メモがある場合：タップで表示できるボタン＆展開パネル */}
+                {l.memo && (
+                  <div style={{ borderTop: "1px dashed rgba(255,255,255,0.08)" }}>
+                    <div 
+                      onClick={() => setExpandedId(prev => prev === l.id ? null : l.id)}
+                      style={{
+                        padding: "0.35rem 0.85rem",
+                        background: "rgba(255,255,255,0.02)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        cursor: "pointer",
+                        fontSize: "0.8rem",
+                        color: "#38bdf8",
+                        fontWeight: 700
+                      }}
+                    >
+                      <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                        💬 メモあり {isMemoOpen ? "(タップで閉じる)" : "(タップで見る)"}
+                      </span>
+                      <span>{isMemoOpen ? "▲" : "▼"}</span>
+                    </div>
+
+                    {isMemoOpen && (
+                      <div style={{
+                        padding: "0.6rem 0.85rem",
+                        background: "rgba(0,0,0,0.3)",
+                        color: "#f8fafc",
+                        fontSize: "0.9rem",
+                        lineHeight: 1.4,
+                        fontWeight: 600
+                      }}>
+                        {l.memo}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}
