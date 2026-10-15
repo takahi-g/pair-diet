@@ -251,7 +251,9 @@ h1, .main-title {
 
 .input-style {
   width: 100%;
-  padding: 0.75rem 1rem;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0.75rem 0.85rem;
   background: var(--bg-input);
   border: 1.5px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -260,6 +262,15 @@ h1, .main-title {
   font-weight: 700;
   outline: none;
   transition: border-color 0.2s;
+  display: block;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input[type="date"].input-style {
+  text-align: center;
+  position: relative;
+  min-height: 44px;
 }
 
 .input-style:focus {
@@ -441,6 +452,15 @@ h1, .main-title {
   }
   .card {
     padding: 0.85rem;
+    overflow: hidden;
+  }
+  .form-group {
+    width: 100%;
+    min-width: 0;
+  }
+  .text-size-large .input-style {
+    font-size: 1.1rem !important;
+    padding: 0.75rem 0.6rem !important;
   }
 }
 
