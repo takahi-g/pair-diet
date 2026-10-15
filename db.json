@@ -17,7 +17,19 @@
       "hideRawNumbers": false
     }
   },
-  "logs": [],
+  "logs": [
+    {
+      "id": "log-1792054792010",
+      "date": "2026-10-15",
+      "user": "husband",
+      "weight": 77.4,
+      "bodyFat": 28.7,
+      "waist": 99.5,
+      "steps": 5000,
+      "memo": "",
+      "createdAt": "2026-10-15T08:59:52.010Z"
+    }
+  ],
   "reactions": [],
-  "updatedAt": "2026-10-15T08:58:44.942Z"
+  "updatedAt": "2026-10-15T08:59:52.010Z"
 }
