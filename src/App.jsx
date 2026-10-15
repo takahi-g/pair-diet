@@ -29,6 +29,16 @@ export default function App() {
   const [dbSyncStatus, setDbSyncStatus] = useState("local"); // local, syncing, success, error
   const isInitialLoad = useRef(true);
 
+  // デフォルト操作ユーザー（"wife" = ママ または "husband" = パパ）
+  const [defaultUser, setDefaultUser] = useState(() => {
+    return localStorage.getItem("pair_diet_default_user") || "wife";
+  });
+
+  const handleUpdateDefaultUser = (userKey) => {
+    setDefaultUser(userKey);
+    localStorage.setItem("pair_diet_default_user", userKey);
+  };
+
   // 1. プロファイル (デフォルトおよびクラウド取得時も確実にパパ & ママに変換)
   const sanitizeProfiles = (rawProfiles) => {
     if (!rawProfiles) return DEFAULT_PROFILES;
@@ -339,6 +349,7 @@ export default function App() {
           <PairDashboard
             profiles={profiles}
             logs={logs}
+            primaryUser={defaultUser}
             onSelectLogToEdit={(log) => setEditingLog(log)}
           />
         )}
@@ -346,6 +357,7 @@ export default function App() {
         {activeTab === "record" && (
           <RecordForm
             profiles={profiles}
+            defaultUser={defaultUser}
             onAddLog={handleAddLog}
           />
         )}
@@ -395,6 +407,8 @@ export default function App() {
           onManualSync={handleManualSync}
           textSize={textSize}
           onToggleTextSize={handleToggleTextSize}
+          defaultUser={defaultUser}
+          onUpdateDefaultUser={handleUpdateDefaultUser}
         />
       )}
     </div>

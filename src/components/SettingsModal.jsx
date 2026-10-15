@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Settings, Cloud, Save, RefreshCw, Type } from "lucide-react";
+import { Settings, Cloud, Save, RefreshCw, Type, User } from "lucide-react";
 
 export default function SettingsModal({ 
   profiles, 
@@ -8,9 +8,12 @@ export default function SettingsModal({
   syncStatus, 
   onManualSync,
   textSize,
-  onToggleTextSize
+  onToggleTextSize,
+  defaultUser,
+  onUpdateDefaultUser
 }) {
   const [formData, setFormData] = useState({ ...profiles });
+  const [currentDefaultUser, setCurrentDefaultUser] = useState(defaultUser || "wife");
 
   const handleChange = (userKey, field, val) => {
     setFormData(prev => ({
@@ -25,6 +28,7 @@ export default function SettingsModal({
   const handleSave = (e) => {
     e.preventDefault();
     onUpdateProfiles(formData);
+    onUpdateDefaultUser(currentDefaultUser);
     onClose();
   };
 
@@ -56,7 +60,7 @@ export default function SettingsModal({
         <div className="card-header">
           <div className="card-title" style={{ fontSize: "1.25rem" }}>
             <Settings size={24} style={{ color: "var(--accent-primary)" }} />
-            <span>設定 & 文字サイズ</span>
+            <span>アプリ設定 & 目標</span>
           </div>
           <button 
             onClick={onClose} 
@@ -73,14 +77,60 @@ export default function SettingsModal({
           </button>
         </div>
 
-        {/* 文字サイズ切り替えスイッチ */}
-        <div style={{ padding: "0.9rem", background: "rgba(99, 102, 241, 0.15)", borderRadius: "var(--radius-md)", border: "1.5px solid rgba(99, 102, 241, 0.4)", marginBottom: "1rem" }}>
+        {/* 1. デフォルトユーザー（メインで使う人）の設定 */}
+        <div style={{ padding: "0.9rem", background: "rgba(244, 114, 182, 0.12)", borderRadius: "var(--radius-md)", border: "1.5px solid rgba(244, 114, 182, 0.4)", marginBottom: "1rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.4rem" }}>
+            <User size={20} style={{ color: "#f472b6" }} />
+            <span style={{ fontSize: "1.05rem", fontWeight: 900, color: "#fff" }}>メインで使う人（デフォルト）</span>
+          </div>
+          <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "0.6rem" }}>
+            選択した方が「夫婦状況」で上に来て、「記録する」でも最初に選択されます。
+          </p>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+            <button
+              type="button"
+              onClick={() => setCurrentDefaultUser("wife")}
+              style={{
+                padding: "0.65rem 0.5rem",
+                borderRadius: "var(--radius-md)",
+                border: `2px solid ${currentDefaultUser === "wife" ? "var(--accent-wife)" : "rgba(255,255,255,0.12)"}`,
+                background: currentDefaultUser === "wife" ? "var(--gradient-wife)" : "rgba(255,255,255,0.05)",
+                color: "#fff",
+                fontWeight: 900,
+                fontSize: "1rem",
+                cursor: "pointer"
+              }}
+            >
+              👩‍🎨 ママをメインにする
+            </button>
+            <button
+              type="button"
+              onClick={() => setCurrentDefaultUser("husband")}
+              style={{
+                padding: "0.65rem 0.5rem",
+                borderRadius: "var(--radius-md)",
+                border: `2px solid ${currentDefaultUser === "husband" ? "var(--accent-husband)" : "rgba(255,255,255,0.12)"}`,
+                background: currentDefaultUser === "husband" ? "var(--gradient-husband)" : "rgba(255,255,255,0.05)",
+                color: "#fff",
+                fontWeight: 900,
+                fontSize: "1rem",
+                cursor: "pointer"
+              }}
+            >
+              👨‍💻 パパをメインにする
+            </button>
+          </div>
+        </div>
+
+        {/* 2. 文字サイズ切り替えスイッチ */}
+        <div style={{ padding: "0.85rem", background: "rgba(99, 102, 241, 0.15)", borderRadius: "var(--radius-md)", border: "1.5px solid rgba(99, 102, 241, 0.4)", marginBottom: "1rem" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <Type size={22} style={{ color: "#a5b4fc" }} />
               <div>
                 <div style={{ fontSize: "1rem", fontWeight: 900, color: "#fff" }}>文字サイズ（老眼対応）</div>
-                <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>全体をさらに大きく見やすくします</div>
+                <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>全体を特大にして見やすくします</div>
               </div>
             </div>
             <button
@@ -103,36 +153,8 @@ export default function SettingsModal({
         </div>
 
         <form onSubmit={handleSave}>
-          {/* 夫の設定 */}
-          <div style={{ padding: "0.9rem", background: "rgba(56, 189, 248, 0.08)", borderRadius: "var(--radius-md)", border: "1.5px solid rgba(56, 189, 248, 0.3)", marginBottom: "0.9rem" }}>
-            <div style={{ fontSize: "1.05rem", fontWeight: 900, color: "#38bdf8", marginBottom: "0.6rem" }}>
-              👨‍💻 パパの目標設定
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem" }}>
-              <div>
-                <label style={{ fontSize: "0.85rem", color: "var(--text-secondary)", fontWeight: 800 }}>名前</label>
-                <input 
-                  type="text" 
-                  className="input-style" 
-                  value={formData.husband.name} 
-                  onChange={(e) => handleChange("husband", "name", e.target.value)} 
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: "0.85rem", color: "var(--text-secondary)", fontWeight: 800 }}>目標体重 (kg)</label>
-                <input 
-                  type="number" 
-                  step="0.1" 
-                  className="input-style" 
-                  value={formData.husband.targetWeight || ""} 
-                  onChange={(e) => handleChange("husband", "targetWeight", parseFloat(e.target.value))} 
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* 妻の設定 */}
-          <div style={{ padding: "0.9rem", background: "rgba(244, 114, 182, 0.08)", borderRadius: "var(--radius-md)", border: "1.5px solid rgba(244, 114, 182, 0.3)", marginBottom: "1.2rem" }}>
+          {/* ママの設定 */}
+          <div style={{ padding: "0.9rem", background: "rgba(244, 114, 182, 0.08)", borderRadius: "var(--radius-md)", border: "1.5px solid rgba(244, 114, 182, 0.3)", marginBottom: "0.9rem" }}>
             <div style={{ fontSize: "1.05rem", fontWeight: 900, color: "#f472b6", marginBottom: "0.6rem" }}>
               👩‍🎨 ママの目標設定
             </div>
@@ -154,6 +176,34 @@ export default function SettingsModal({
                   className="input-style" 
                   value={formData.wife.targetWeight || ""} 
                   onChange={(e) => handleChange("wife", "targetWeight", parseFloat(e.target.value))} 
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* パパの設定 */}
+          <div style={{ padding: "0.9rem", background: "rgba(56, 189, 248, 0.08)", borderRadius: "var(--radius-md)", border: "1.5px solid rgba(56, 189, 248, 0.3)", marginBottom: "1.2rem" }}>
+            <div style={{ fontSize: "1.05rem", fontWeight: 900, color: "#38bdf8", marginBottom: "0.6rem" }}>
+              👨‍💻 パパの目標設定
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem" }}>
+              <div>
+                <label style={{ fontSize: "0.85rem", color: "var(--text-secondary)", fontWeight: 800 }}>名前</label>
+                <input 
+                  type="text" 
+                  className="input-style" 
+                  value={formData.husband.name} 
+                  onChange={(e) => handleChange("husband", "name", e.target.value)} 
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: "0.85rem", color: "var(--text-secondary)", fontWeight: 800 }}>目標体重 (kg)</label>
+                <input 
+                  type="number" 
+                  step="0.1" 
+                  className="input-style" 
+                  value={formData.husband.targetWeight || ""} 
+                  onChange={(e) => handleChange("husband", "targetWeight", parseFloat(e.target.value))} 
                 />
               </div>
             </div>
@@ -186,7 +236,7 @@ export default function SettingsModal({
               </button>
             </div>
             <div style={{ color: "var(--text-secondary)", lineHeight: 1.4 }}>
-              クラウド（takahi-g/pair-diet/db.json）でリアルタイム同期中。どの端末からでも同じデータが反映されます。
+              クラウドでリアルタイム同期中。どのスマホからでも最新データが反映されます。
             </div>
           </div>
 

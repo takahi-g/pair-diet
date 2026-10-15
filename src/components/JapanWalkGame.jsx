@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
-import { MapPin, Footprints } from "lucide-react";
-import { STATIONS, TOTAL_KM, KM_PER_STEP } from "../utils/stations";
+import { MapPin, Footprints, Calendar, Sparkles } from "lucide-react";
+import { STATIONS, TOTAL_KM, KM_PER_STEP, DEPARTURE_DATE, START_STATION_NAME } from "../utils/stations";
 
 export default function JapanWalkGame({ logs }) {
   const stats = useMemo(() => {
@@ -47,7 +47,7 @@ export default function JapanWalkGame({ logs }) {
 
   return (
     <div>
-      {/* 2人の総歩数・現在地ハイライトカード */}
+      {/* 出発情報＆ハイライトカード */}
       <div 
         className="card"
         style={{
@@ -72,6 +72,20 @@ export default function JapanWalkGame({ logs }) {
           >
             進捗 {stats.progressPercent}%
           </span>
+        </div>
+
+        {/* 出発地 ＆ 出発日バナー */}
+        <div style={{ margin: "0.85rem 0", padding: "0.75rem 0.95rem", background: "rgba(0,0,0,0.45)", borderRadius: "var(--radius-md)", border: "1px solid rgba(255,255,255,0.12)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", color: "#f59e0b", fontWeight: 900, fontSize: "0.95rem" }}>
+            <Calendar size={16} />
+            <span>出発日: {DEPARTURE_DATE}（明日スタート！）</span>
+          </div>
+          <div style={{ fontSize: "1.05rem", fontWeight: 900, color: "#fff", marginTop: "0.25rem" }}>
+            🚩 出発地点: {START_STATION_NAME}
+          </div>
+          <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginTop: "0.15rem" }}>
+            二日市駅を出発して日本全国を巡り、再び二日市駅へ戻ってくる大冒険！
+          </div>
         </div>
 
         {/* 総歩数 & 距離 */}
@@ -99,9 +113,9 @@ export default function JapanWalkGame({ logs }) {
 
         {/* 日本一周プログレスバー */}
         <div style={{ marginTop: "0.6rem" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.9rem", color: "var(--text-secondary)", fontWeight: 800, marginBottom: "0.4rem" }}>
-            <span>🚩 東京・日本橋</span>
-            <span>🏆 ゴール (4,200km)</span>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem", color: "var(--text-secondary)", fontWeight: 800, marginBottom: "0.4rem" }}>
+            <span>🚩 JR二日市駅</span>
+            <span>🏆 ゴール・二日市駅 (4,200km)</span>
           </div>
           <div style={{ width: "100%", height: "16px", background: "rgba(255,255,255,0.1)", borderRadius: "var(--radius-full)", overflow: "hidden" }}>
             <div 
@@ -150,7 +164,7 @@ export default function JapanWalkGame({ logs }) {
         <div className="card-header">
           <div className="card-title">
             <MapPin size={22} style={{ color: "var(--accent-primary)" }} />
-            <span>日本一周ルート（ご当地バッジ）</span>
+            <span>筑紫野・二日市駅発 日本一周ルート</span>
           </div>
         </div>
 

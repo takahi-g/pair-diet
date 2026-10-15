@@ -1,7 +1,7 @@
 import React from "react";
 import { Edit3 } from "lucide-react";
 
-export default function PairDashboard({ profiles, logs, onSelectLogToEdit }) {
+export default function PairDashboard({ profiles, logs, onSelectLogToEdit, primaryUser = "wife" }) {
   const husbandLogs = logs.filter(l => l.user === "husband").sort((a, b) => new Date(b.date) - new Date(a.date));
   const wifeLogs = logs.filter(l => l.user === "wife").sort((a, b) => new Date(b.date) - new Date(a.date));
 
@@ -21,6 +21,7 @@ export default function PairDashboard({ profiles, logs, onSelectLogToEdit }) {
 
     return (
       <div 
+        key={userKey}
         className="card" 
         style={{ 
           borderLeft: `6px solid ${accentColor}`,
@@ -29,31 +30,38 @@ export default function PairDashboard({ profiles, logs, onSelectLogToEdit }) {
         }}
       >
         <div className="card-header" style={{ alignItems: "center" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
-            <span style={{ fontSize: "2.4rem" }}>{profile.avatar}</span>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-                <span style={{ fontWeight: 900, fontSize: "1.45rem" }}>{profile.name}</span>
-                {/* 日付を大きく目立たせる */}
+          <div style={{ display: "flex", alignItems: "center", gap: "0.85rem", flex: 1, minWidth: 0 }}>
+            <span style={{ fontSize: "2.4rem", flexShrink: 0 }}>{profile.avatar}</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              {/* 名前と日付：横並びで絶対に縦に折れないように nowrap 指定 */}
+              <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "nowrap" }}>
+                <span style={{ fontWeight: 900, fontSize: "1.45rem", whiteSpace: "nowrap", flexShrink: 0 }}>
+                  {profile.name}
+                </span>
+                {/* 日付をすっきり見やすい高コントラストデザインに */}
                 <span 
                   style={{ 
                     fontSize: "0.95rem", 
                     padding: "0.25rem 0.75rem", 
                     borderRadius: "var(--radius-full)",
-                    background: isHusband ? "rgba(56, 189, 248, 0.25)" : "rgba(244, 114, 182, 0.25)",
-                    color: accentColor,
+                    background: "rgba(255, 255, 255, 0.12)",
+                    border: `1.5px solid ${accentColor}`,
+                    color: "#fff",
                     fontWeight: 900,
-                    letterSpacing: "0.02em"
+                    letterSpacing: "0.02em",
+                    whiteSpace: "nowrap"
                   }}
                 >
                   📅 {latest.date || "未記録"}
                 </span>
               </div>
-              <div style={{ fontSize: "1rem", color: "var(--text-secondary)", marginTop: "0.25rem", fontWeight: 700 }}>
-                目標: {profile.targetWeight ? `${profile.targetWeight}kg` : "未設定"} 
+
+              {/* 目標体重を大きく強調表示 */}
+              <div style={{ fontSize: "1.15rem", color: "var(--text-primary)", marginTop: "0.35rem", fontWeight: 800 }}>
+                目標: <strong style={{ color: "#fff", fontSize: "1.25rem" }}>{profile.targetWeight ? `${profile.targetWeight}kg` : "未設定"}</strong>
                 {toTarget && (
-                  <span style={{ color: Number(toTarget) <= 0 ? "var(--accent-emerald)" : "#cbd5e1", marginLeft: "0.5rem", fontWeight: 800 }}>
-                    ({Number(toTarget) <= 0 ? "達成！🎉" : `あと ${toTarget}kg`})
+                  <span style={{ color: Number(toTarget) <= 0 ? "var(--accent-emerald)" : "#fca5a5", marginLeft: "0.5rem", fontWeight: 900 }}>
+                    ({Number(toTarget) <= 0 ? "目標達成！🎉" : `あと ${toTarget}kg`})
                   </span>
                 )}
               </div>
@@ -65,17 +73,18 @@ export default function PairDashboard({ profiles, logs, onSelectLogToEdit }) {
             <button
               onClick={() => onSelectLogToEdit(latest)}
               style={{
-                background: "rgba(255, 255, 255, 0.08)",
-                border: "1.5px solid rgba(255, 255, 255, 0.2)",
+                background: "rgba(255, 255, 255, 0.1)",
+                border: "1.5px solid rgba(255, 255, 255, 0.25)",
                 borderRadius: "var(--radius-full)",
                 padding: "0.45rem 0.85rem",
                 color: "#fff",
                 fontSize: "0.9rem",
-                fontWeight: 800,
+                fontWeight: 900,
                 display: "flex",
                 alignItems: "center",
                 gap: "0.35rem",
-                cursor: "pointer"
+                cursor: "pointer",
+                flexShrink: 0
               }}
             >
               <Edit3 size={16} />
@@ -92,44 +101,44 @@ export default function PairDashboard({ profiles, logs, onSelectLogToEdit }) {
             display: "grid", 
             gridTemplateColumns: "repeat(3, 1fr)", 
             gap: "0.6rem", 
-            marginTop: "0.6rem",
+            marginTop: "0.75rem",
             cursor: "pointer"
           }}
         >
           {/* 体重 */}
-          <div style={{ background: "rgba(15, 23, 42, 0.8)", padding: "0.85rem 0.5rem", borderRadius: "var(--radius-md)", textAlign: "center", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <div style={{ background: "rgba(15, 23, 42, 0.85)", padding: "0.85rem 0.5rem", borderRadius: "var(--radius-md)", textAlign: "center", border: "1px solid rgba(255,255,255,0.08)" }}>
             <div style={{ fontSize: "0.9rem", color: "var(--text-secondary)", fontWeight: 800 }}>体重</div>
-            <div style={{ fontSize: "1.75rem", fontWeight: 900, color: "#fff", marginTop: "0.2rem" }}>
+            <div style={{ fontSize: "1.85rem", fontWeight: 900, color: "#fff", marginTop: "0.2rem" }}>
               {latest.weight ? `${latest.weight}kg` : "--"}
             </div>
             {diffWeight && (
-              <div style={{ fontSize: "0.9rem", fontWeight: 800, marginTop: "0.2rem", color: Number(diffWeight) < 0 ? "var(--accent-emerald)" : Number(diffWeight) > 0 ? "var(--accent-rose)" : "var(--text-muted)" }}>
+              <div style={{ fontSize: "0.95rem", fontWeight: 900, marginTop: "0.2rem", color: Number(diffWeight) < 0 ? "var(--accent-emerald)" : Number(diffWeight) > 0 ? "var(--accent-rose)" : "var(--text-muted)" }}>
                 {Number(diffWeight) > 0 ? `+${diffWeight}kg` : `${diffWeight}kg`}
               </div>
             )}
           </div>
 
           {/* 体脂肪率 */}
-          <div style={{ background: "rgba(15, 23, 42, 0.8)", padding: "0.85rem 0.5rem", borderRadius: "var(--radius-md)", textAlign: "center", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <div style={{ background: "rgba(15, 23, 42, 0.85)", padding: "0.85rem 0.5rem", borderRadius: "var(--radius-md)", textAlign: "center", border: "1px solid rgba(255,255,255,0.08)" }}>
             <div style={{ fontSize: "0.9rem", color: "var(--text-secondary)", fontWeight: 800 }}>体脂肪率</div>
-            <div style={{ fontSize: "1.75rem", fontWeight: 900, color: "#fff", marginTop: "0.2rem" }}>
+            <div style={{ fontSize: "1.85rem", fontWeight: 900, color: "#fff", marginTop: "0.2rem" }}>
               {latest.bodyFat ? `${latest.bodyFat}%` : "--"}
             </div>
             {diffFat && (
-              <div style={{ fontSize: "0.9rem", fontWeight: 800, marginTop: "0.2rem", color: Number(diffFat) < 0 ? "var(--accent-emerald)" : Number(diffFat) > 0 ? "var(--accent-rose)" : "var(--text-muted)" }}>
+              <div style={{ fontSize: "0.95rem", fontWeight: 900, marginTop: "0.2rem", color: Number(diffFat) < 0 ? "var(--accent-emerald)" : Number(diffFat) > 0 ? "var(--accent-rose)" : "var(--text-muted)" }}>
                 {Number(diffFat) > 0 ? `+${diffFat}%` : `${diffFat}%`}
               </div>
             )}
           </div>
 
           {/* ウエスト */}
-          <div style={{ background: "rgba(15, 23, 42, 0.8)", padding: "0.85rem 0.5rem", borderRadius: "var(--radius-md)", textAlign: "center", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <div style={{ background: "rgba(15, 23, 42, 0.85)", padding: "0.85rem 0.5rem", borderRadius: "var(--radius-md)", textAlign: "center", border: "1px solid rgba(255,255,255,0.08)" }}>
             <div style={{ fontSize: "0.9rem", color: "var(--text-secondary)", fontWeight: 800 }}>ウエスト</div>
-            <div style={{ fontSize: "1.75rem", fontWeight: 900, color: "#fff", marginTop: "0.2rem" }}>
+            <div style={{ fontSize: "1.85rem", fontWeight: 900, color: "#fff", marginTop: "0.2rem" }}>
               {latest.waist ? `${latest.waist}cm` : "--"}
             </div>
             {diffWaist && (
-              <div style={{ fontSize: "0.9rem", fontWeight: 800, marginTop: "0.2rem", color: Number(diffWaist) < 0 ? "var(--accent-emerald)" : Number(diffWaist) > 0 ? "var(--accent-rose)" : "var(--text-muted)" }}>
+              <div style={{ fontSize: "0.95rem", fontWeight: 900, marginTop: "0.2rem", color: Number(diffWaist) < 0 ? "var(--accent-emerald)" : Number(diffWaist) > 0 ? "var(--accent-rose)" : "var(--text-muted)" }}>
                 {Number(diffWaist) > 0 ? `+${diffWaist}cm` : `${diffWaist}cm`}
               </div>
             )}
@@ -145,7 +154,7 @@ export default function PairDashboard({ profiles, logs, onSelectLogToEdit }) {
             alignItems: "center", 
             marginTop: "0.85rem", 
             padding: "0.75rem 1rem", 
-            background: "rgba(255,255,255,0.05)", 
+            background: "rgba(255,255,255,0.06)", 
             borderRadius: "var(--radius-md)", 
             fontSize: "1rem",
             cursor: "pointer"
@@ -153,7 +162,7 @@ export default function PairDashboard({ profiles, logs, onSelectLogToEdit }) {
         >
           <div>
             <span style={{ color: "var(--text-secondary)", fontWeight: 800 }}>今日の歩数: </span>
-            <strong style={{ color: "#38bdf8", fontSize: "1.2rem" }}>{latest.steps ? latest.steps.toLocaleString() : 0} 歩</strong>
+            <strong style={{ color: "#38bdf8", fontSize: "1.25rem" }}>{latest.steps ? latest.steps.toLocaleString() : 0} 歩</strong>
           </div>
           {latest.memo ? (
             <div style={{ color: "var(--text-primary)", fontWeight: 800, maxWidth: "220px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -169,10 +178,12 @@ export default function PairDashboard({ profiles, logs, onSelectLogToEdit }) {
     );
   };
 
+  // primaryUser（デフォルト表示順）に応じてカードの上下を入れ替え
+  const userOrder = primaryUser === "wife" ? ["wife", "husband"] : ["husband", "wife"];
+
   return (
     <div>
-      {renderUserCard("husband", husbandLogs)}
-      {renderUserCard("wife", wifeLogs)}
+      {userOrder.map(u => renderUserCard(u, u === "husband" ? husbandLogs : wifeLogs))}
     </div>
   );
 }

@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { PlusCircle, Calendar, Footprints, Sparkles } from "lucide-react";
 
-export default function RecordForm({ profiles, onAddLog }) {
-  const [user, setUser] = useState("husband");
+export default function RecordForm({ profiles, onAddLog, defaultUser = "wife" }) {
+  const [user, setUser] = useState(defaultUser);
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [weight, setWeight] = useState("");
   const [bodyFat, setBodyFat] = useState("");
@@ -10,6 +10,10 @@ export default function RecordForm({ profiles, onAddLog }) {
   const [steps, setSteps] = useState("");
   const [memo, setMemo] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
+
+  useEffect(() => {
+    setUser(defaultUser);
+  }, [defaultUser]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -42,6 +46,8 @@ export default function RecordForm({ profiles, onAddLog }) {
   };
 
   const isHusband = user === "husband";
+  // defaultUser がママの場合はママを左（最初）に表示
+  const buttonsOrder = defaultUser === "wife" ? ["wife", "husband"] : ["husband", "wife"];
 
   return (
     <div className="card">
@@ -53,51 +59,39 @@ export default function RecordForm({ profiles, onAddLog }) {
       </div>
 
       <form onSubmit={handleSubmit}>
-        {/* 記録者の選択（旦那 / 妻） */}
+        {/* 記録者の選択（defaultUserに応じて左/右を入れ替え） */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem", marginBottom: "1.2rem" }}>
-          <button
-            type="button"
-            onClick={() => setUser("husband")}
-            style={{
-              padding: "0.85rem 0.5rem",
-              borderRadius: "var(--radius-md)",
-              border: `2.5px solid ${isHusband ? "var(--accent-husband)" : "rgba(255,255,255,0.12)"}`,
-              background: isHusband ? "rgba(56, 189, 248, 0.2)" : "rgba(255,255,255,0.04)",
-              color: isHusband ? "#38bdf8" : "var(--text-secondary)",
-              fontWeight: 900,
-              fontSize: "1.1rem",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "0.5rem"
-            }}
-          >
-            <span style={{ fontSize: "1.5rem" }}>{profiles.husband.avatar}</span>
-            <span>{profiles.husband.name}</span>
-          </button>
+          {buttonsOrder.map(uKey => {
+            const isSelected = user === uKey;
+            const isH = uKey === "husband";
+            const color = isH ? "var(--accent-husband)" : "var(--accent-wife)";
+            const bg = isH ? "rgba(56, 189, 248, 0.2)" : "rgba(244, 114, 182, 0.2)";
 
-          <button
-            type="button"
-            onClick={() => setUser("wife")}
-            style={{
-              padding: "0.85rem 0.5rem",
-              borderRadius: "var(--radius-md)",
-              border: `2.5px solid ${!isHusband ? "var(--accent-wife)" : "rgba(255,255,255,0.12)"}`,
-              background: !isHusband ? "rgba(244, 114, 182, 0.2)" : "rgba(255,255,255,0.04)",
-              color: !isHusband ? "#f472b6" : "var(--text-secondary)",
-              fontWeight: 900,
-              fontSize: "1.1rem",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "0.5rem"
-            }}
-          >
-            <span style={{ fontSize: "1.5rem" }}>{profiles.wife.avatar}</span>
-            <span>{profiles.wife.name}</span>
-          </button>
+            return (
+              <button
+                key={uKey}
+                type="button"
+                onClick={() => setUser(uKey)}
+                style={{
+                  padding: "0.85rem 0.5rem",
+                  borderRadius: "var(--radius-md)",
+                  border: `2.5px solid ${isSelected ? color : "rgba(255,255,255,0.12)"}`,
+                  background: isSelected ? bg : "rgba(255,255,255,0.04)",
+                  color: isSelected ? (isH ? "#38bdf8" : "#f472b6") : "var(--text-secondary)",
+                  fontWeight: 900,
+                  fontSize: "1.1rem",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "0.5rem"
+                }}
+              >
+                <span style={{ fontSize: "1.5rem" }}>{profiles[uKey].avatar}</span>
+                <span>{profiles[uKey].name}</span>
+              </button>
+            );
+          })}
         </div>
 
         {/* 日付 */}
