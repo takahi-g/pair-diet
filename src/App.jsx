@@ -160,11 +160,21 @@ export default function App() {
     syncToCloud(updated, logs, reactions);
   };
 
+  // トースト通知メッセージ管理
+  const [toastMessage, setToastMessage] = useState("");
+  const showToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage("");
+    }, 2500);
+  };
+
   // 既存記録の更新（タップ編集）
   const handleUpdateLog = (updatedLog) => {
     const updatedLogs = logs.map(l => l.id === updatedLog.id ? updatedLog : l);
     setLogs(updatedLogs);
     syncToCloud(profiles, updatedLogs, reactions);
+    showToast("変更を保存しました");
   };
 
   // 記録の削除
@@ -172,6 +182,7 @@ export default function App() {
     const updatedLogs = logs.filter(l => l.id !== logId);
     setLogs(updatedLogs);
     syncToCloud(profiles, updatedLogs, reactions);
+    showToast("記録を削除しました");
   };
 
   // 新規記録の追加
@@ -192,11 +203,11 @@ export default function App() {
   const handleUpdateProfiles = (newProfiles) => {
     setProfiles(newProfiles);
     syncToCloud(newProfiles, logs, reactions);
+    showToast("変更を保存しました");
   };
 
   // 手動再同期・更新ステート
   const [isUpdating, setIsUpdating] = useState(false);
-  const [showUpdateToast, setShowUpdateToast] = useState(false);
 
   // 手動再同期（更新）ボタン
   const handleManualSync = async () => {
@@ -223,8 +234,7 @@ export default function App() {
       const waitTime = Math.max(0, 600 - elapsed);
       setTimeout(() => {
         setIsUpdating(false);
-        setShowUpdateToast(true);
-        setTimeout(() => setShowUpdateToast(false), 2500);
+        showToast("最新データに更新しました！");
       }, waitTime);
     }
   };
@@ -249,7 +259,7 @@ export default function App() {
         <div className="header-top-bar">
           {/* 左側：バージョン番号 */}
           <span className="version-pill">
-            v{typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "2026.10.15 14:45"}
+            v{typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "2026.10.15 15:25"}
           </span>
 
           {/* 右側：文字特大、更新、設定の3つのボタンをすっきり整列 */}
@@ -286,11 +296,11 @@ export default function App() {
           </div>
         </div>
 
-        {/* 更新完了トースト通知 */}
-        {showUpdateToast && (
+        {/* トースト通知 */}
+        {toastMessage && (
           <div className="update-toast animate-pop">
             <CheckCircle2 size={16} />
-            <span>最新データに更新しました！</span>
+            <span>{toastMessage}</span>
           </div>
         )}
 

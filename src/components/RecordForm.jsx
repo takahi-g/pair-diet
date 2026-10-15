@@ -345,17 +345,17 @@ export default function RecordForm({ profiles, logs = [], onAddLog, defaultUser 
             className="animate-pop"
             style={{
               marginTop: "0.85rem",
-              padding: "0.85rem",
+              padding: "0.75rem",
               background: "rgba(16, 185, 129, 0.2)",
               border: "1.5px solid rgba(16, 185, 129, 0.5)",
               borderRadius: "var(--radius-md)",
               color: "#34d399",
-              fontSize: "1rem",
-              fontWeight: 800,
+              fontSize: "1.05rem",
+              fontWeight: 900,
               textAlign: "center"
             }}
           >
-            🎉 記録しました！日本一周マップに歩数が反映されました！
+            保存しました
           </div>
         )}
       </form>
