@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { TrendingDown, Edit3, Calendar } from "lucide-react";
+import { TrendingDown, Edit3, Calendar, Users, Eye } from "lucide-react";
 
 // 期間フィルター定義
 const TIME_RANGES = [
@@ -15,65 +15,152 @@ const TIME_RANGES = [
 
 export default function DietChart({ logs, profiles, onSelectLogToEdit }) {
   const [metric, setMetric] = useState("weight"); // weight, bodyFat, waist
-  const [timeRange, setTimeRange] = useState("1m"); // デフォルト1ヶ月
+  const [timeRange, setTimeRange] = useState("1m"); // 1w, 1m, 3m, 6m, 1y, 2y, 3y, all
+  const [selectedUser, setSelectedUser] = useState("both"); // "both", "wife", "husband"
+  const [inspectedPoint, setInspectedPoint] = useState(null);
 
-  // 期間に応じたログのフィルタリング
-  const filteredLogs = useMemo(() => {
-    const sorted = [...logs].sort((a, b) => new Date(a.date) - new Date(b.date));
+  const metricConfig = {
+    weight: { label: "体重", unit: "kg", color: "#38bdf8" },
+    bodyFat: { label: "体脂肪率", unit: "%", color: "#ec4899" },
+    waist: { label: "ウエスト", unit: "cm", color: "#10b981" }
+  };
+
+  // 全ログを昇順（古い順）にソート
+  const sortedAllLogs = useMemo(() => {
+    return [...logs].sort((a, b) => new Date(a.date) - new Date(b.date));
+  }, [logs]);
+
+  // 期間に応じたフィルタリング（最新ログ日または現在日を基準に範囲計算）
+  const { filteredLogs, startDateStr, endDateStr } = useMemo(() => {
+    if (sortedAllLogs.length === 0) return { filteredLogs: [], startDateStr: "", endDateStr: "" };
+
     const rangeObj = TIME_RANGES.find(r => r.id === timeRange);
-    if (!rangeObj || rangeObj.id === "all") return sorted;
+    
+    // 最新の日付を基準にする（今日と最新記録の遅い方）
+    const latestLogDate = new Date(sortedAllLogs[sortedAllLogs.length - 1].date);
+    const today = new Date();
+    const baseDate = latestLogDate > today ? latestLogDate : today;
 
-    const cutoff = new Date();
+    if (!rangeObj || rangeObj.id === "all") {
+      return {
+        filteredLogs: sortedAllLogs,
+        startDateStr: sortedAllLogs[0].date,
+        endDateStr: baseDate.toISOString().split("T")[0]
+      };
+    }
+
+    const cutoff = new Date(baseDate.getTime());
     cutoff.setDate(cutoff.getDate() - rangeObj.days);
     const cutoffStr = cutoff.toISOString().split("T")[0];
 
-    return sorted.filter(l => l.date >= cutoffStr);
-  }, [logs, timeRange]);
+    const fl = sortedAllLogs.filter(l => l.date >= cutoffStr);
+    return {
+      filteredLogs: fl,
+      startDateStr: cutoffStr,
+      endDateStr: baseDate.toISOString().split("T")[0]
+    };
+  }, [sortedAllLogs, timeRange]);
 
-  const getPoints = (userKey) => {
-    const userLogs = filteredLogs.filter(l => l.user === userKey && l[metric] != null);
-    if (userLogs.length === 0) return { points: [], values: [] };
+  // グラフ描画用の座標計算（日付を共通の時間軸Xにマッピング）
+  const chartData = useMemo(() => {
+    const validLogs = filteredLogs.filter(l => l[metric] != null && (selectedUser === "both" || l.user === selectedUser));
+    if (validLogs.length === 0) {
+      return { hasData: false };
+    }
 
-    const values = userLogs.map(l => l[metric]);
-    const minVal = Math.min(...values) * 0.95;
-    const maxVal = Math.max(...values) * 1.05;
-    const range = maxVal - minVal || 1;
+    // 全ての有効な数値からY軸の最小値・最大値を算出
+    const allVals = validLogs.map(l => Number(l[metric]));
+    const rawMin = Math.min(...allVals);
+    const rawMax = Math.max(...allVals);
+    
+    // Y軸に余裕を持たせる（1目盛り分あける）
+    const margin = metric === "weight" ? 1.5 : metric === "bodyFat" ? 1.5 : 2;
+    const minY = Math.floor(rawMin - margin);
+    const maxY = Math.ceil(rawMax + margin);
+    const yRange = maxY - minY || 1;
 
-    const width = 320;
-    const height = 140;
+    // SVG領域のサイズ
+    const svgWidth = 360;
+    const svgHeight = 220;
+    const padLeft = 46;
+    const padRight = 20;
+    const padTop = 30;
+    const padBottom = 35;
+    const plotWidth = svgWidth - padLeft - padRight;
+    const plotHeight = svgHeight - padTop - padBottom;
 
-    const points = userLogs.map((l, index) => {
-      const x = (index / (Math.max(1, userLogs.length - 1))) * width;
-      const y = height - ((l[metric] - minVal) / range) * height;
-      return { x, y, val: l[metric], date: l.date };
-    });
+    // 時間軸（X軸）の範囲
+    const startTime = new Date(startDateStr).getTime();
+    const endTime = new Date(endDateStr).getTime();
+    const timeSpan = Math.max(86400000, endTime - startTime);
 
-    return { points, minVal, maxVal, values };
-  };
+    const calcPoint = (log) => {
+      const t = new Date(log.date).getTime();
+      const xRatio = Math.max(0, Math.min(1, (t - startTime) / timeSpan));
+      const x = padLeft + xRatio * plotWidth;
+      const val = Number(log[metric]);
+      const yRatio = (val - minY) / yRange;
+      const y = padTop + plotHeight - yRatio * plotHeight;
+      return { x, y, val, date: log.date, user: log.user, rawLog: log };
+    };
 
-  const husbandData = getPoints("husband");
-  const wifeData = getPoints("wife");
+    const husbandPoints = validLogs.filter(l => l.user === "husband").map(calcPoint);
+    const wifePoints = validLogs.filter(l => l.user === "wife").map(calcPoint);
+
+    // Y軸目盛り（4本）
+    const yTicks = [
+      maxY,
+      Math.round((maxY * 2 + minY) / 3 * 10) / 10,
+      Math.round((maxY + minY * 2) / 3 * 10) / 10,
+      minY
+    ];
+
+    // X軸目盛り（開始・中間・終了）
+    const xTicks = [
+      { label: startDateStr.replace(/^\d{4}-/, ""), ratio: 0 },
+      { label: new Date(startTime + timeSpan / 2).toISOString().split("T")[0].replace(/^\d{4}-/, ""), ratio: 0.5 },
+      { label: endDateStr.replace(/^\d{4}-/, ""), ratio: 1 }
+    ];
+
+    return {
+      hasData: true,
+      svgWidth,
+      svgHeight,
+      padLeft,
+      padRight,
+      padTop,
+      padBottom,
+      plotWidth,
+      plotHeight,
+      minY,
+      maxY,
+      yTicks,
+      xTicks,
+      husbandPoints,
+      wifePoints
+    };
+  }, [filteredLogs, startDateStr, endDateStr, metric, selectedUser]);
 
   return (
     <div className="card">
-      <div className="card-header">
+      <div className="card-header" style={{ flexWrap: "wrap", gap: "0.5rem" }}>
         <div className="card-title">
-          <TrendingDown size={22} style={{ color: "var(--accent-primary)" }} />
+          <TrendingDown size={24} style={{ color: "var(--accent-primary)" }} />
           <span>推移グラフ</span>
         </div>
 
         {/* 指標切り替え (体重 / 体脂肪 / ウエスト) */}
-        <div style={{ display: "flex", gap: "0.4rem" }}>
+        <div style={{ display: "flex", gap: "0.35rem" }}>
           <button
             onClick={() => setMetric("weight")}
             style={{
-              padding: "0.4rem 0.75rem",
+              padding: "0.45rem 0.85rem",
               borderRadius: "var(--radius-full)",
               border: "none",
               background: metric === "weight" ? "var(--gradient-primary)" : "rgba(255,255,255,0.08)",
               color: "#fff",
-              fontSize: "0.85rem",
-              fontWeight: 800,
+              fontSize: "0.9rem",
+              fontWeight: 900,
               cursor: "pointer"
             }}
           >
@@ -82,13 +169,13 @@ export default function DietChart({ logs, profiles, onSelectLogToEdit }) {
           <button
             onClick={() => setMetric("bodyFat")}
             style={{
-              padding: "0.4rem 0.75rem",
+              padding: "0.45rem 0.85rem",
               borderRadius: "var(--radius-full)",
               border: "none",
               background: metric === "bodyFat" ? "var(--gradient-primary)" : "rgba(255,255,255,0.08)",
               color: "#fff",
-              fontSize: "0.85rem",
-              fontWeight: 800,
+              fontSize: "0.9rem",
+              fontWeight: 900,
               cursor: "pointer"
             }}
           >
@@ -97,13 +184,13 @@ export default function DietChart({ logs, profiles, onSelectLogToEdit }) {
           <button
             onClick={() => setMetric("waist")}
             style={{
-              padding: "0.4rem 0.75rem",
+              padding: "0.45rem 0.85rem",
               borderRadius: "var(--radius-full)",
               border: "none",
               background: metric === "waist" ? "var(--gradient-primary)" : "rgba(255,255,255,0.08)",
               color: "#fff",
-              fontSize: "0.85rem",
-              fontWeight: 800,
+              fontSize: "0.9rem",
+              fontWeight: 900,
               cursor: "pointer"
             }}
           >
@@ -112,12 +199,17 @@ export default function DietChart({ logs, profiles, onSelectLogToEdit }) {
         </div>
       </div>
 
-      {/* 期間切り替えボタン（一週間・一ヶ月・三ヶ月・6ヶ月・1年・2年・3年・全期間） */}
-      <div style={{ marginBottom: "1rem" }}>
-        <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", fontWeight: 800, marginBottom: "0.4rem", display: "flex", alignItems: "center", gap: "0.3rem" }}>
-          <Calendar size={14} /> 表示期間の切り替え
+      {/* 期間切り替えボタン（全期間・1ヶ月など） */}
+      <div style={{ marginBottom: "0.85rem" }}>
+        <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", fontWeight: 800, marginBottom: "0.4rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+            <Calendar size={14} /> 期間: {startDateStr} 〜 {endDateStr}
+          </span>
+          <span style={{ color: "var(--text-muted)", fontSize: "0.78rem" }}>
+            ({filteredLogs.length}件の記録)
+          </span>
         </div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.3rem" }}>
           {TIME_RANGES.map(r => {
             const isSelected = timeRange === r.id;
             return (
@@ -125,15 +217,15 @@ export default function DietChart({ logs, profiles, onSelectLogToEdit }) {
                 key={r.id}
                 onClick={() => setTimeRange(r.id)}
                 style={{
-                  padding: "0.35rem 0.7rem",
-                  borderRadius: "var(--radius-full)",
-                  border: isSelected ? "1.5px solid var(--accent-primary)" : "1px solid rgba(255,255,255,0.1)",
-                  background: isSelected ? "rgba(99, 102, 241, 0.25)" : "rgba(255,255,255,0.04)",
+                  padding: "0.45rem 0.2rem",
+                  borderRadius: "var(--radius-sm)",
+                  border: isSelected ? "2px solid #6366f1" : "1px solid rgba(255,255,255,0.1)",
+                  background: isSelected ? "var(--gradient-primary)" : "rgba(255,255,255,0.04)",
                   color: isSelected ? "#fff" : "var(--text-secondary)",
-                  fontSize: "0.825rem",
+                  fontSize: "0.85rem",
                   fontWeight: 900,
                   cursor: "pointer",
-                  transition: "all 0.15s"
+                  textAlign: "center"
                 }}
               >
                 {r.label}
@@ -143,78 +235,272 @@ export default function DietChart({ logs, profiles, onSelectLogToEdit }) {
         </div>
       </div>
 
-      {/* 凡例 */}
-      <div style={{ display: "flex", gap: "1.2rem", marginBottom: "0.75rem", fontSize: "1rem", fontWeight: 900 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.45rem" }}>
-          <span style={{ width: 14, height: 14, borderRadius: "50%", background: "#38bdf8", display: "inline-block" }} />
-          <span>{profiles.husband.name}</span>
+      {/* 凡例 & 表示切り替え（ふたり / ママだけ / パパだけ） */}
+      <div style={{ 
+        display: "flex", 
+        justifyContent: "space-between", 
+        alignItems: "center", 
+        background: "rgba(255,255,255,0.05)", 
+        padding: "0.45rem 0.75rem", 
+        borderRadius: "var(--radius-md)", 
+        marginBottom: "0.75rem" 
+      }}>
+        <div style={{ display: "flex", gap: "0.8rem", fontSize: "0.95rem", fontWeight: 900 }}>
+          <div 
+            onClick={() => setSelectedUser(prev => prev === "husband" ? "both" : "husband")}
+            style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              gap: "0.35rem", 
+              cursor: "pointer",
+              opacity: selectedUser === "wife" ? 0.35 : 1
+            }}
+          >
+            <span style={{ width: 14, height: 14, borderRadius: "50%", background: "#38bdf8", display: "inline-block" }} />
+            <span>{profiles.husband.name}</span>
+          </div>
+          <div 
+            onClick={() => setSelectedUser(prev => prev === "wife" ? "both" : "wife")}
+            style={{ 
+              display: "flex", 
+              alignItems: "center", 
+              gap: "0.35rem", 
+              cursor: "pointer",
+              opacity: selectedUser === "husband" ? 0.35 : 1
+            }}
+          >
+            <span style={{ width: 14, height: 14, borderRadius: "50%", background: "#f472b6", display: "inline-block" }} />
+            <span>{profiles.wife.name}</span>
+          </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.45rem" }}>
-          <span style={{ width: 14, height: 14, borderRadius: "50%", background: "#f472b6", display: "inline-block" }} />
-          <span>{profiles.wife.name}</span>
-        </div>
+
+        <button
+          onClick={() => setSelectedUser("both")}
+          style={{
+            background: selectedUser === "both" ? "rgba(255,255,255,0.15)" : "transparent",
+            border: "1px solid rgba(255,255,255,0.2)",
+            borderRadius: "var(--radius-full)",
+            color: "#fff",
+            fontSize: "0.78rem",
+            padding: "0.2rem 0.55rem",
+            fontWeight: 800,
+            cursor: "pointer"
+          }}
+        >
+          {selectedUser === "both" ? "2人とも表示中" : "2人表示に戻す"}
+        </button>
       </div>
 
       {/* SVGグラフエリア */}
-      <div style={{ width: "100%", overflowX: "auto", background: "rgba(15, 23, 42, 0.8)", borderRadius: "var(--radius-md)", padding: "1.2rem 0.6rem" }}>
-        {husbandData.points.length === 0 && wifeData.points.length === 0 ? (
-          <div style={{ textAlign: "center", color: "var(--text-muted)", padding: "2.5rem 1rem", fontSize: "0.95rem" }}>
+      <div style={{ 
+        width: "100%", 
+        background: "rgba(15, 23, 42, 0.95)", 
+        borderRadius: "var(--radius-md)", 
+        padding: "0.85rem 0.4rem 0.4rem 0.4rem",
+        border: "1px solid rgba(255,255,255,0.1)",
+        boxSizing: "border-box",
+        position: "relative"
+      }}>
+        {!chartData.hasData ? (
+          <div style={{ textAlign: "center", color: "var(--text-muted)", padding: "3rem 1rem", fontSize: "1rem", fontWeight: 800 }}>
             この期間の記録はありません
           </div>
         ) : (
-          <svg viewBox="0 0 340 160" style={{ width: "100%", height: "200px", overflow: "visible" }}>
-            <line x1="10" y1="20" x2="330" y2="20" stroke="rgba(255,255,255,0.08)" strokeDasharray="3,3" />
-            <line x1="10" y1="80" x2="330" y2="80" stroke="rgba(255,255,255,0.08)" strokeDasharray="3,3" />
-            <line x1="10" y1="140" x2="330" y2="140" stroke="rgba(255,255,255,0.08)" strokeDasharray="3,3" />
+          <div>
+            <svg 
+              viewBox={`0 0 ${chartData.svgWidth} ${chartData.svgHeight}`} 
+              style={{ width: "100%", height: "230px", overflow: "visible" }}
+            >
+              {/* Y軸グリッド線 & 目盛り数値 */}
+              {chartData.yTicks.map((yVal, idx) => {
+                const yPos = chartData.padTop + (idx / (chartData.yTicks.length - 1)) * chartData.plotHeight;
+                return (
+                  <g key={`grid-y-${idx}`}>
+                    <line 
+                      x1={chartData.padLeft} 
+                      y1={yPos} 
+                      x2={chartData.svgWidth - chartData.padRight} 
+                      y2={yPos} 
+                      stroke="rgba(255,255,255,0.1)" 
+                      strokeDasharray="4,4" 
+                    />
+                    <text 
+                      x={chartData.padLeft - 6} 
+                      y={yPos + 4} 
+                      fill="var(--text-muted)" 
+                      fontSize="11" 
+                      fontWeight="800" 
+                      textAnchor="end"
+                    >
+                      {yVal}
+                    </text>
+                  </g>
+                );
+              })}
 
-            {/* 夫（パパ）のライン */}
-            {husbandData.points.length > 1 && (
-              <path
-                d={`M ${husbandData.points.map(p => `${p.x + 10},${p.y + 10}`).join(" L ")}`}
-                fill="none"
-                stroke="#38bdf8"
-                strokeWidth="4"
-                strokeLinecap="round"
-              />
-            )}
-            {husbandData.points.map((p, idx) => (
-              <g key={`h-${idx}`}>
-                <circle cx={p.x + 10} cy={p.y + 10} r="5" fill="#38bdf8" />
-                <text x={p.x + 10} y={p.y - 1} fill="#e2e8f0" fontSize="12" fontWeight="800" textAnchor="middle">
-                  {p.val}
-                </text>
-              </g>
-            ))}
+              {/* X軸目盛りラベル（開始・中間・終了） */}
+              {chartData.xTicks.map((xItem, idx) => {
+                const xPos = chartData.padLeft + xItem.ratio * chartData.plotWidth;
+                return (
+                  <text
+                    key={`grid-x-${idx}`}
+                    x={xPos}
+                    y={chartData.svgHeight - 8}
+                    fill="var(--text-secondary)"
+                    fontSize="11"
+                    fontWeight="800"
+                    textAnchor={idx === 0 ? "start" : idx === 2 ? "end" : "middle"}
+                  >
+                    {xItem.label}
+                  </text>
+                );
+              })}
 
-            {/* 妻（ママ）のライン */}
-            {wifeData.points.length > 1 && (
-              <path
-                d={`M ${wifeData.points.map(p => `${p.x + 10},${p.y + 10}`).join(" L ")}`}
-                fill="none"
-                stroke="#f472b6"
-                strokeWidth="4"
-                strokeLinecap="round"
-              />
+              {/* 夫（パパ）の折れ線・面 */}
+              {(selectedUser === "both" || selectedUser === "husband") && chartData.husbandPoints.length > 1 && (
+                <path
+                  d={`M ${chartData.husbandPoints.map(p => `${p.x},${p.y}`).join(" L ")}`}
+                  fill="none"
+                  stroke="#38bdf8"
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              )}
+
+              {/* 妻（ママ）の折れ線・面 */}
+              {(selectedUser === "both" || selectedUser === "wife") && chartData.wifePoints.length > 1 && (
+                <path
+                  d={`M ${chartData.wifePoints.map(p => `${p.x},${p.y}`).join(" L ")}`}
+                  fill="none"
+                  stroke="#f472b6"
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              )}
+
+              {/* 夫（パパ）のプロット点 */}
+              {(selectedUser === "both" || selectedUser === "husband") && chartData.husbandPoints.map((p, idx) => {
+                const isInspected = inspectedPoint && inspectedPoint.date === p.date && inspectedPoint.user === "husband";
+                return (
+                  <g 
+                    key={`h-pt-${idx}`} 
+                    onClick={() => setInspectedPoint(p)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <circle 
+                      cx={p.x} 
+                      cy={p.y} 
+                      r={isInspected ? 8 : 5.5} 
+                      fill="#38bdf8" 
+                      stroke="#fff" 
+                      strokeWidth={isInspected ? 2.5 : 1.5} 
+                    />
+                    <text 
+                      x={p.x} 
+                      y={p.y - 8} 
+                      fill="#fff" 
+                      fontSize="12" 
+                      fontWeight="900" 
+                      textAnchor="middle"
+                      style={{ textShadow: "0 2px 4px rgba(0,0,0,0.8)" }}
+                    >
+                      {p.val}
+                    </text>
+                  </g>
+                );
+              })}
+
+              {/* 妻（ママ）のプロット点 */}
+              {(selectedUser === "both" || selectedUser === "wife") && chartData.wifePoints.map((p, idx) => {
+                const isInspected = inspectedPoint && inspectedPoint.date === p.date && inspectedPoint.user === "wife";
+                return (
+                  <g 
+                    key={`w-pt-${idx}`} 
+                    onClick={() => setInspectedPoint(p)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <circle 
+                      cx={p.x} 
+                      cy={p.y} 
+                      r={isInspected ? 8 : 5.5} 
+                      fill="#f472b6" 
+                      stroke="#fff" 
+                      strokeWidth={isInspected ? 2.5 : 1.5} 
+                    />
+                    <text 
+                      x={p.x} 
+                      y={p.y - 8} 
+                      fill="#f472b6" 
+                      fontSize="12" 
+                      fontWeight="900" 
+                      textAnchor="middle"
+                      style={{ textShadow: "0 2px 4px rgba(0,0,0,0.8)" }}
+                    >
+                      {p.val}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+
+            {/* 点をタップした時の詳細インスペクター */}
+            {inspectedPoint && (
+              <div 
+                className="animate-pop"
+                style={{
+                  marginTop: "0.6rem",
+                  padding: "0.65rem 0.85rem",
+                  background: "rgba(255, 255, 255, 0.08)",
+                  border: `1.5px solid ${inspectedPoint.user === "husband" ? "#38bdf8" : "#f472b6"}`,
+                  borderRadius: "var(--radius-md)",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center"
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", fontWeight: 800 }}>
+                    📅 {inspectedPoint.date} ({inspectedPoint.user === "husband" ? profiles.husband.name : profiles.wife.name})
+                  </div>
+                  <div style={{ fontSize: "1.25rem", fontWeight: 900, color: "#fff", marginTop: "0.1rem" }}>
+                    {metricConfig[metric].label}: <span style={{ color: inspectedPoint.user === "husband" ? "#38bdf8" : "#f472b6" }}>{inspectedPoint.val} {metricConfig[metric].unit}</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => onSelectLogToEdit && onSelectLogToEdit(inspectedPoint.rawLog)}
+                  style={{
+                    background: "var(--gradient-primary)",
+                    border: "none",
+                    borderRadius: "var(--radius-full)",
+                    padding: "0.4rem 0.75rem",
+                    color: "#fff",
+                    fontWeight: 900,
+                    fontSize: "0.85rem",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.3rem"
+                  }}
+                >
+                  <Edit3 size={14} />
+                  <span>編集</span>
+                </button>
+              </div>
             )}
-            {wifeData.points.map((p, idx) => (
-              <g key={`w-${idx}`}>
-                <circle cx={p.x + 10} cy={p.y + 10} r="5" fill="#f472b6" />
-                <text x={p.x + 10} y={p.y - 1} fill="#f472b6" fontSize="12" fontWeight="800" textAnchor="middle">
-                  {p.val}
-                </text>
-              </g>
-            ))}
-          </svg>
+          </div>
         )}
       </div>
 
       {/* 履歴リスト */}
       <div style={{ marginTop: "1.2rem" }}>
         <div style={{ fontSize: "1rem", fontWeight: 800, color: "var(--text-secondary)", marginBottom: "0.5rem" }}>
-          直近の記録ログ (タップして編集・削除できます)
+          期間内の記録 ({filteredLogs.length}件)
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-          {filteredLogs.slice(-8).reverse().map(l => {
+          {filteredLogs.slice(-10).reverse().map(l => {
             const isHusband = l.user === "husband";
             return (
               <div
@@ -225,7 +511,7 @@ export default function DietChart({ logs, profiles, onSelectLogToEdit }) {
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  padding: "0.85rem 1rem",
+                  padding: "0.85rem 0.95rem",
                   background: "rgba(255,255,255,0.06)",
                   borderRadius: "var(--radius-md)",
                   fontSize: "1rem",
@@ -237,9 +523,9 @@ export default function DietChart({ logs, profiles, onSelectLogToEdit }) {
                 <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
                   <span style={{ fontSize: "1.4rem" }}>{isHusband ? "👨‍💻" : "👩‍🎨"}</span>
                   <span style={{ fontWeight: 900, color: "#fff", fontSize: "1.05rem" }}>{l.date}</span>
-                  {l.memo && <span style={{ color: "var(--text-secondary)", fontWeight: 600, fontSize: "0.9rem" }}>- {l.memo}</span>}
+                  {l.memo && <span style={{ color: "var(--text-secondary)", fontWeight: 600, fontSize: "0.88rem" }}>- {l.memo}</span>}
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.8rem", fontWeight: 900 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.7rem", fontWeight: 900 }}>
                   {l.weight && <span style={{ color: isHusband ? "#38bdf8" : "#f472b6", fontSize: "1.15rem" }}>{l.weight}kg</span>}
                   {l.bodyFat && <span style={{ color: "var(--text-secondary)" }}>{l.bodyFat}%</span>}
                   {l.waist && <span style={{ color: "var(--text-muted)" }}>{l.waist}cm</span>}
@@ -253,3 +539,4 @@ export default function DietChart({ logs, profiles, onSelectLogToEdit }) {
     </div>
   );
 }
+
