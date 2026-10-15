@@ -1,7 +1,7 @@
 {
   "profiles": {
     "husband": {
-      "name": "旦那さん",
+      "name": "パパ",
       "avatar": "👨‍💻",
       "targetWeight": 68,
       "targetFat": 18,
@@ -9,7 +9,7 @@
       "hideRawNumbers": false
     },
     "wife": {
-      "name": "奥さん",
+      "name": "ママ",
       "avatar": "👩‍🎨",
       "targetWeight": 50,
       "targetFat": 22,
@@ -113,5 +113,5 @@
       "message": "サラダ美味しかった！ありがとう❤️"
     }
   ],
-  "updatedAt": "2026-10-15T05:20:17.195Z"
+  "updatedAt": "2026-10-15T05:46:31.324Z"
 }
