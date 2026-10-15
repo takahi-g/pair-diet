@@ -158,6 +158,14 @@
   ],
   "reactions": [
     {
+      "id": "react-1792046271251",
+      "from": "husband",
+      "to": "wife",
+      "stampId": "eat",
+      "timestamp": "2026-10-15T06:37:51.251Z",
+      "message": "ヘルシーごはん最高！"
+    },
+    {
       "id": "react-1792046261552",
       "from": "husband",
       "to": "wife",
@@ -198,5 +206,5 @@
       "message": "サラダ美味しかった！ありがとう❤️"
     }
   ],
-  "updatedAt": "2026-10-15T06:37:41.552Z"
+  "updatedAt": "2026-10-15T06:37:51.252Z"
 }
