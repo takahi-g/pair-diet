@@ -99,46 +99,48 @@ export default function PairDashboard({ profiles, logs, onSelectLogToEdit, prima
           title="タップして数値を編集"
           style={{ 
             display: "grid", 
-            gridTemplateColumns: "repeat(3, 1fr)", 
-            gap: "0.6rem", 
+            gridTemplateColumns: "repeat(3, minmax(0, 1fr))", 
+            gap: "0.45rem", 
             marginTop: "0.75rem",
-            cursor: "pointer"
+            cursor: "pointer",
+            width: "100%",
+            boxSizing: "border-box"
           }}
         >
           {/* 体重 */}
-          <div style={{ background: "rgba(15, 23, 42, 0.85)", padding: "0.85rem 0.5rem", borderRadius: "var(--radius-md)", textAlign: "center", border: "1px solid rgba(255,255,255,0.08)" }}>
-            <div style={{ fontSize: "0.9rem", color: "var(--text-secondary)", fontWeight: 800 }}>体重</div>
-            <div style={{ fontSize: "1.85rem", fontWeight: 900, color: "#fff", marginTop: "0.2rem" }}>
+          <div style={{ background: "rgba(15, 23, 42, 0.85)", padding: "0.75rem 0.25rem", borderRadius: "var(--radius-md)", textAlign: "center", border: "1px solid rgba(255,255,255,0.08)", minWidth: 0, overflow: "hidden" }}>
+            <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", fontWeight: 800 }}>体重</div>
+            <div style={{ fontSize: "clamp(1.25rem, 5vw, 1.75rem)", fontWeight: 900, color: "#fff", marginTop: "0.2rem", whiteSpace: "nowrap", letterSpacing: "-0.02em" }}>
               {latest.weight ? `${latest.weight}kg` : "--"}
             </div>
             {diffWeight && (
-              <div style={{ fontSize: "0.95rem", fontWeight: 900, marginTop: "0.2rem", color: Number(diffWeight) < 0 ? "var(--accent-emerald)" : Number(diffWeight) > 0 ? "var(--accent-rose)" : "var(--text-muted)" }}>
+              <div style={{ fontSize: "0.85rem", fontWeight: 900, marginTop: "0.2rem", color: Number(diffWeight) < 0 ? "var(--accent-emerald)" : Number(diffWeight) > 0 ? "var(--accent-rose)" : "var(--text-muted)", whiteSpace: "nowrap" }}>
                 {Number(diffWeight) > 0 ? `+${diffWeight}kg` : `${diffWeight}kg`}
               </div>
             )}
           </div>
 
           {/* 体脂肪率 */}
-          <div style={{ background: "rgba(15, 23, 42, 0.85)", padding: "0.85rem 0.5rem", borderRadius: "var(--radius-md)", textAlign: "center", border: "1px solid rgba(255,255,255,0.08)" }}>
-            <div style={{ fontSize: "0.9rem", color: "var(--text-secondary)", fontWeight: 800 }}>体脂肪率</div>
-            <div style={{ fontSize: "1.85rem", fontWeight: 900, color: "#fff", marginTop: "0.2rem" }}>
+          <div style={{ background: "rgba(15, 23, 42, 0.85)", padding: "0.75rem 0.25rem", borderRadius: "var(--radius-md)", textAlign: "center", border: "1px solid rgba(255,255,255,0.08)", minWidth: 0, overflow: "hidden" }}>
+            <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", fontWeight: 800 }}>体脂肪率</div>
+            <div style={{ fontSize: "clamp(1.25rem, 5vw, 1.75rem)", fontWeight: 900, color: "#fff", marginTop: "0.2rem", whiteSpace: "nowrap", letterSpacing: "-0.02em" }}>
               {latest.bodyFat ? `${latest.bodyFat}%` : "--"}
             </div>
             {diffFat && (
-              <div style={{ fontSize: "0.95rem", fontWeight: 900, marginTop: "0.2rem", color: Number(diffFat) < 0 ? "var(--accent-emerald)" : Number(diffFat) > 0 ? "var(--accent-rose)" : "var(--text-muted)" }}>
+              <div style={{ fontSize: "0.85rem", fontWeight: 900, marginTop: "0.2rem", color: Number(diffFat) < 0 ? "var(--accent-emerald)" : Number(diffFat) > 0 ? "var(--accent-rose)" : "var(--text-muted)", whiteSpace: "nowrap" }}>
                 {Number(diffFat) > 0 ? `+${diffFat}%` : `${diffFat}%`}
               </div>
             )}
           </div>
 
           {/* ウエスト */}
-          <div style={{ background: "rgba(15, 23, 42, 0.85)", padding: "0.85rem 0.5rem", borderRadius: "var(--radius-md)", textAlign: "center", border: "1px solid rgba(255,255,255,0.08)" }}>
-            <div style={{ fontSize: "0.9rem", color: "var(--text-secondary)", fontWeight: 800 }}>ウエスト</div>
-            <div style={{ fontSize: "1.85rem", fontWeight: 900, color: "#fff", marginTop: "0.2rem" }}>
+          <div style={{ background: "rgba(15, 23, 42, 0.85)", padding: "0.75rem 0.25rem", borderRadius: "var(--radius-md)", textAlign: "center", border: "1px solid rgba(255,255,255,0.08)", minWidth: 0, overflow: "hidden" }}>
+            <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", fontWeight: 800 }}>ウエスト</div>
+            <div style={{ fontSize: "clamp(1.25rem, 5vw, 1.75rem)", fontWeight: 900, color: "#fff", marginTop: "0.2rem", whiteSpace: "nowrap", letterSpacing: "-0.02em" }}>
               {latest.waist ? `${latest.waist}cm` : "--"}
             </div>
             {diffWaist && (
-              <div style={{ fontSize: "0.95rem", fontWeight: 900, marginTop: "0.2rem", color: Number(diffWaist) < 0 ? "var(--accent-emerald)" : Number(diffWaist) > 0 ? "var(--accent-rose)" : "var(--text-muted)" }}>
+              <div style={{ fontSize: "0.85rem", fontWeight: 900, marginTop: "0.2rem", color: Number(diffWaist) < 0 ? "var(--accent-emerald)" : Number(diffWaist) > 0 ? "var(--accent-rose)" : "var(--text-muted)", whiteSpace: "nowrap" }}>
                 {Number(diffWaist) > 0 ? `+${diffWaist}cm` : `${diffWaist}cm`}
               </div>
             )}
