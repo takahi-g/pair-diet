@@ -29,68 +29,91 @@ export default function PairDashboard({ profiles, logs, onSelectLogToEdit, prima
           position: "relative"
         }}
       >
-        <div className="card-header" style={{ alignItems: "center" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.85rem", flex: 1, minWidth: 0 }}>
-            <span style={{ fontSize: "2.4rem", flexShrink: 0 }}>{profile.avatar}</span>
+        <div className="card-header" style={{ alignItems: "center", marginBottom: "0.6rem", paddingBottom: "0.5rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", width: "100%", minWidth: 0 }}>
+            <span style={{ fontSize: "2.3rem", flexShrink: 0 }}>{profile.avatar}</span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              {/* 名前と日付：横並びで絶対に縦に折れないように nowrap 指定 */}
-              <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "nowrap" }}>
-                <span style={{ fontWeight: 900, fontSize: "1.45rem", whiteSpace: "nowrap", flexShrink: 0 }}>
+              {/* 1行目: 名前・日付・編集ボタンを横一列に並べる */}
+              <div style={{ display: "flex", alignItems: "center", gap: "0.45rem", flexWrap: "nowrap", width: "100%" }}>
+                <span style={{ fontWeight: 900, fontSize: "1.35rem", whiteSpace: "nowrap", flexShrink: 0 }}>
                   {profile.name}
                 </span>
-                {/* 日付をすっきり見やすい高コントラストデザインに */}
+
+                {/* 日付バッジ */}
                 <span 
                   style={{ 
-                    fontSize: "0.95rem", 
-                    padding: "0.25rem 0.75rem", 
+                    fontSize: "0.85rem", 
+                    padding: "0.2rem 0.55rem", 
                     borderRadius: "var(--radius-full)",
                     background: "rgba(255, 255, 255, 0.12)",
                     border: `1.5px solid ${accentColor}`,
                     color: "#fff",
                     fontWeight: 900,
-                    letterSpacing: "0.02em",
-                    whiteSpace: "nowrap"
+                    letterSpacing: "0.01em",
+                    whiteSpace: "nowrap",
+                    flexShrink: 0
                   }}
                 >
-                  📅 {latest.date || "未記録"}
+                  📅 {latest.date ? latest.date.replace(/^\d{4}-/, "") : "未記録"}
                 </span>
+
+                {/* 編集ボタンを日付のすぐ横に配置 */}
+                {latest.id && (
+                  <button
+                    onClick={() => onSelectLogToEdit(latest)}
+                    style={{
+                      background: "rgba(255, 255, 255, 0.1)",
+                      border: "1px solid rgba(255, 255, 255, 0.25)",
+                      borderRadius: "var(--radius-full)",
+                      padding: "0.2rem 0.6rem",
+                      color: "#fff",
+                      fontSize: "0.825rem",
+                      fontWeight: 800,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.25rem",
+                      cursor: "pointer",
+                      whiteSpace: "nowrap",
+                      flexShrink: 0,
+                      marginLeft: "auto"
+                    }}
+                  >
+                    <Edit3 size={13} />
+                    <span>編集</span>
+                  </button>
+                )}
               </div>
 
-              {/* 目標体重を大きく強調表示 */}
-              <div style={{ fontSize: "1.15rem", color: "var(--text-primary)", marginTop: "0.35rem", fontWeight: 800 }}>
-                目標: <strong style={{ color: "#fff", fontSize: "1.25rem" }}>{profile.targetWeight ? `${profile.targetWeight}kg` : "未設定"}</strong>
+              {/* 2行目: 目標体重と（あと◯kg）を絶対に改行せず一行で表示 */}
+              <div style={{ 
+                fontSize: "1.05rem", 
+                color: "var(--text-primary)", 
+                marginTop: "0.3rem", 
+                fontWeight: 800,
+                display: "flex",
+                alignItems: "center",
+                flexWrap: "nowrap",
+                whiteSpace: "nowrap",
+                overflow: "hidden"
+              }}>
+                <span>目標: </span>
+                <strong style={{ color: "#fff", fontSize: "1.15rem", marginLeft: "0.25rem" }}>
+                  {profile.targetWeight ? `${profile.targetWeight}kg` : "未設定"}
+                </strong>
                 {toTarget && (
-                  <span style={{ color: Number(toTarget) <= 0 ? "var(--accent-emerald)" : "#fca5a5", marginLeft: "0.5rem", fontWeight: 900 }}>
-                    ({Number(toTarget) <= 0 ? "目標達成！🎉" : `あと ${toTarget}kg`})
+                  <span style={{ 
+                    color: Number(toTarget) <= 0 ? "var(--accent-emerald)" : "#fca5a5", 
+                    marginLeft: "0.45rem", 
+                    fontWeight: 900,
+                    fontSize: "0.98rem",
+                    whiteSpace: "nowrap"
+                  }}>
+                    ({Number(toTarget) <= 0 ? "達成！🎉" : `あと ${toTarget}kg`})
                   </span>
                 )}
               </div>
             </div>
           </div>
-
-          {/* タップして編集ボタン */}
-          {latest.id && (
-            <button
-              onClick={() => onSelectLogToEdit(latest)}
-              style={{
-                background: "rgba(255, 255, 255, 0.1)",
-                border: "1.5px solid rgba(255, 255, 255, 0.25)",
-                borderRadius: "var(--radius-full)",
-                padding: "0.45rem 0.85rem",
-                color: "#fff",
-                fontSize: "0.9rem",
-                fontWeight: 900,
-                display: "flex",
-                alignItems: "center",
-                gap: "0.35rem",
-                cursor: "pointer",
-                flexShrink: 0
-              }}
-            >
-              <Edit3 size={16} />
-              <span>編集</span>
-            </button>
-          )}
         </div>
 
         {/* 3大指標（体重・体脂肪・ウエスト）- タップで即編集可能 */}
