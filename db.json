@@ -1,0 +1,100 @@
+{
+  "profiles": {
+    "husband": {
+      "name": "旦那さん",
+      "avatar": "👨‍💻",
+      "targetWeight": 68,
+      "targetFat": 18,
+      "targetWaist": 82,
+      "hideRawNumbers": false
+    },
+    "wife": {
+      "name": "奥さん",
+      "avatar": "👩‍🎨",
+      "targetWeight": 50,
+      "targetFat": 22,
+      "targetWaist": 64,
+      "hideRawNumbers": false
+    }
+  },
+  "logs": [
+    {
+      "id": "log-1",
+      "date": "2026-10-13",
+      "user": "husband",
+      "weight": 73.2,
+      "bodyFat": 21.5,
+      "waist": 86,
+      "steps": 8200,
+      "memo": "夜ウォーキング30分"
+    },
+    {
+      "id": "log-2",
+      "date": "2026-10-13",
+      "user": "wife",
+      "weight": 53.4,
+      "bodyFat": 24.2,
+      "waist": 67.5,
+      "steps": 6400,
+      "memo": "買い物でたくさん歩いた"
+    },
+    {
+      "id": "log-3",
+      "date": "2026-10-14",
+      "user": "husband",
+      "weight": 72.8,
+      "bodyFat": 21.2,
+      "waist": 85.5,
+      "steps": 9500,
+      "memo": "エレベーター使わず階段！"
+    },
+    {
+      "id": "log-4",
+      "date": "2026-10-14",
+      "user": "wife",
+      "weight": 53,
+      "bodyFat": 23.9,
+      "waist": 67,
+      "steps": 7100,
+      "memo": "ヘルシーサラダ作ったよ"
+    },
+    {
+      "id": "log-5",
+      "date": "2026-10-15",
+      "user": "husband",
+      "weight": 72.5,
+      "bodyFat": 20.9,
+      "waist": 85,
+      "steps": 6300,
+      "memo": "朝からいい調子！"
+    },
+    {
+      "id": "log-6",
+      "date": "2026-10-15",
+      "user": "wife",
+      "weight": 52.8,
+      "bodyFat": 23.7,
+      "waist": 66.8,
+      "steps": 5800,
+      "memo": "水分たくさん摂る"
+    }
+  ],
+  "reactions": [
+    {
+      "id": "react-1",
+      "from": "wife",
+      "to": "husband",
+      "stampId": "praise",
+      "timestamp": "2026-10-15T01:19:01.718Z",
+      "message": "階段使ったのえらい！👏"
+    },
+    {
+      "id": "react-2",
+      "from": "husband",
+      "to": "wife",
+      "stampId": "heart",
+      "timestamp": "2026-10-15T03:19:01.718Z",
+      "message": "サラダ美味しかった！ありがとう❤️"
+    }
+  ]
+}
