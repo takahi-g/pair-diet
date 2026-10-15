@@ -162,17 +162,51 @@ export default function App() {
     }
   };
 
+  // 文字サイズ設定 (largeをデフォルトにして老眼でも見やすく)
+  const [textSize, setTextSize] = useState(() => {
+    return localStorage.getItem("pair_diet_text_size") || "large";
+  });
+
+  const handleToggleTextSize = () => {
+    setTextSize(prev => {
+      const next = prev === "large" ? "normal" : "large";
+      localStorage.setItem("pair_diet_text_size", next);
+      return next;
+    });
+  };
+
   return (
-    <div className="container">
+    <div className={`container ${textSize === "large" ? "text-size-large" : ""}`}>
       {/* ヘッダー */}
       <header>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
           <div className="badge-tag">
-            <Heart size={14} style={{ color: "#f472b6" }} />
+            <Heart size={16} style={{ color: "#f472b6" }} />
             <span>夫婦ペアダイエット</span>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            {/* 文字大切り替えボタン（ヘッダーで即切り替え可能） */}
+            <button
+              onClick={handleToggleTextSize}
+              title="文字サイズ切り替え"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.2rem",
+                padding: "0.3rem 0.65rem",
+                borderRadius: "var(--radius-full)",
+                fontSize: "0.8rem",
+                fontWeight: 900,
+                background: textSize === "large" ? "var(--gradient-primary)" : "rgba(255, 255, 255, 0.08)",
+                color: "#fff",
+                border: "1px solid var(--border-color)",
+                cursor: "pointer"
+              }}
+            >
+              <span>{textSize === "large" ? "🔍 文字特大" : "文字標準"}</span>
+            </button>
+
             {/* クラウド同期バッジ */}
             <button
               onClick={handleManualSync}
@@ -180,45 +214,45 @@ export default function App() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "0.25rem",
-                padding: "0.25rem 0.6rem",
+                gap: "0.3rem",
+                padding: "0.3rem 0.65rem",
                 borderRadius: "var(--radius-full)",
-                fontSize: "0.7rem",
-                fontWeight: 700,
+                fontSize: "0.8rem",
+                fontWeight: 800,
                 background: dbSyncStatus === "success" 
-                  ? "rgba(16, 185, 129, 0.15)" 
+                  ? "rgba(16, 185, 129, 0.2)" 
                   : dbSyncStatus === "syncing" 
-                  ? "rgba(56, 189, 248, 0.15)" 
-                  : "rgba(239, 68, 68, 0.15)",
+                  ? "rgba(56, 189, 248, 0.2)" 
+                  : "rgba(239, 68, 68, 0.2)",
                 color: dbSyncStatus === "success" 
                   ? "#34d399" 
                   : dbSyncStatus === "syncing" 
                   ? "#38bdf8" 
-                  : "#f87171",
+                  : "#fca5a5",
                 border: "1px solid var(--border-color)",
                 cursor: "pointer"
               }}
             >
-              {dbSyncStatus === "syncing" ? <RefreshCw size={12} className="animate-spin" /> : <Cloud size={12} />}
-              <span>{dbSyncStatus === "success" ? "同期中（正常）" : dbSyncStatus === "syncing" ? "通信中..." : "オフライン"}</span>
+              {dbSyncStatus === "syncing" ? <RefreshCw size={13} className="animate-spin" /> : <Cloud size={13} />}
+              <span>{dbSyncStatus === "success" ? "同期中" : dbSyncStatus === "syncing" ? "通信中" : "オフライン"}</span>
             </button>
 
             <button
               onClick={() => setShowSettings(true)}
               style={{
-                background: "rgba(255, 255, 255, 0.08)",
+                background: "rgba(255, 255, 255, 0.1)",
                 border: "1px solid var(--border-color)",
-                color: "var(--text-secondary)",
+                color: "var(--text-primary)",
                 borderRadius: "50%",
-                width: 32,
-                height: 32,
+                width: 36,
+                height: 36,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 cursor: "pointer"
               }}
             >
-              <Settings size={16} />
+              <Settings size={18} />
             </button>
           </div>
         </div>
@@ -235,7 +269,7 @@ export default function App() {
           className={`tab-btn ${activeTab === "dashboard" ? "active" : ""}`}
           onClick={() => setActiveTab("dashboard")}
         >
-          <Users size={15} />
+          <Users size={18} />
           <span>夫婦状況</span>
         </button>
 
@@ -243,7 +277,7 @@ export default function App() {
           className={`tab-btn ${activeTab === "record" ? "active" : ""}`}
           onClick={() => setActiveTab("record")}
         >
-          <PlusCircle size={15} />
+          <PlusCircle size={18} />
           <span>記録する</span>
         </button>
 
@@ -251,7 +285,7 @@ export default function App() {
           className={`tab-btn ${activeTab === "walk" ? "active" : ""}`}
           onClick={() => setActiveTab("walk")}
         >
-          <Footprints size={15} />
+          <Footprints size={18} />
           <span>日本一周</span>
         </button>
 
@@ -259,7 +293,7 @@ export default function App() {
           className={`tab-btn ${activeTab === "chart" ? "active" : ""}`}
           onClick={() => setActiveTab("chart")}
         >
-          <TrendingDown size={15} />
+          <TrendingDown size={18} />
           <span>グラフ</span>
         </button>
 
@@ -267,7 +301,7 @@ export default function App() {
           className={`tab-btn ${activeTab === "reactions" ? "active" : ""}`}
           onClick={() => setActiveTab("reactions")}
         >
-          <MessageSquareHeart size={15} />
+          <MessageSquareHeart size={18} />
           <span>スタンプ</span>
         </button>
       </nav>
@@ -320,6 +354,8 @@ export default function App() {
           onClose={() => setShowSettings(false)}
           syncStatus={dbSyncStatus}
           onManualSync={handleManualSync}
+          textSize={textSize}
+          onToggleTextSize={handleToggleTextSize}
         />
       )}
     </div>
