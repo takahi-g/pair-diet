@@ -206,9 +206,25 @@ export default function App() {
       {/* ヘッダー */}
       <header>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-          <div className="badge-tag">
-            <Heart size={16} style={{ color: "#f472b6" }} />
-            <span>夫婦ペアダイエット</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+            <div className="badge-tag" style={{ margin: 0 }}>
+              <Heart size={16} style={{ color: "#f472b6" }} />
+              <span>夫婦ペアダイエット</span>
+            </div>
+            {/* バージョン情報（ビルド日時） */}
+            <span 
+              style={{ 
+                fontSize: "0.75rem", 
+                color: "var(--text-muted)", 
+                background: "rgba(255,255,255,0.06)", 
+                padding: "0.25rem 0.55rem", 
+                borderRadius: "var(--radius-full)",
+                fontWeight: 700,
+                border: "1px solid rgba(255,255,255,0.08)"
+              }}
+            >
+              v{typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "2026.10.15 14:36"}
+            </span>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
