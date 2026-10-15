@@ -172,9 +172,18 @@ export default function App() {
     syncToCloud(newProfiles, logs, reactions);
   };
 
-  // 手動再同期ボタン
+  // 手動再同期・更新ステート
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [showUpdateToast, setShowUpdateToast] = useState(false);
+
+  // 手動再同期（更新）ボタン
   const handleManualSync = async () => {
+    setIsUpdating(true);
     setDbSyncStatus("syncing");
+    if (navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+    const startTime = Date.now();
     try {
       const cloudData = await fetchDietDataFromGitHub();
       if (cloudData) {
@@ -184,7 +193,17 @@ export default function App() {
       }
       setDbSyncStatus("success");
     } catch (e) {
+      console.warn("手動更新エラー:", e);
       setDbSyncStatus("error");
+    } finally {
+      // ユーザーが更新されたことをしっかり視認できるように最低600msは回転を表示
+      const elapsed = Date.now() - startTime;
+      const waitTime = Math.max(0, 600 - elapsed);
+      setTimeout(() => {
+        setIsUpdating(false);
+        setShowUpdateToast(true);
+        setTimeout(() => setShowUpdateToast(false), 2500);
+      }, waitTime);
     }
   };
 
@@ -249,34 +268,30 @@ export default function App() {
               <span>{textSize === "large" ? "🔍 文字特大" : "文字標準"}</span>
             </button>
 
-            {/* クラウド同期バッジ */}
+            {/* 更新ボタン（タップして即座に最新データを同期＆更新） */}
             <button
               onClick={handleManualSync}
-              title="クリックして最新データを再取得"
+              disabled={isUpdating}
+              title="タップして最新データに更新"
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "0.3rem",
-                padding: "0.3rem 0.65rem",
+                gap: "0.35rem",
+                padding: "0.35rem 0.75rem",
                 borderRadius: "var(--radius-full)",
-                fontSize: "0.8rem",
-                fontWeight: 800,
-                background: dbSyncStatus === "success" 
-                  ? "rgba(16, 185, 129, 0.2)" 
-                  : dbSyncStatus === "syncing" 
-                  ? "rgba(56, 189, 248, 0.2)" 
-                  : "rgba(239, 68, 68, 0.2)",
-                color: dbSyncStatus === "success" 
-                  ? "#34d399" 
-                  : dbSyncStatus === "syncing" 
-                  ? "#38bdf8" 
-                  : "#fca5a5",
-                border: "1px solid var(--border-color)",
-                cursor: "pointer"
+                fontSize: "0.85rem",
+                fontWeight: 900,
+                background: isUpdating 
+                  ? "rgba(56, 189, 248, 0.25)" 
+                  : "rgba(56, 189, 248, 0.15)",
+                color: "#38bdf8",
+                border: "1.5px solid rgba(56, 189, 248, 0.4)",
+                cursor: isUpdating ? "wait" : "pointer",
+                transition: "all 0.2s"
               }}
             >
-              {dbSyncStatus === "syncing" ? <RefreshCw size={13} className="animate-spin" /> : <Cloud size={13} />}
-              <span>{dbSyncStatus === "success" ? "同期中" : dbSyncStatus === "syncing" ? "通信中" : "オフライン"}</span>
+              <RefreshCw size={14} className={isUpdating ? "animate-spin" : ""} />
+              <span>{isUpdating ? "更新中..." : "更新"}</span>
             </button>
 
             <button
@@ -298,6 +313,33 @@ export default function App() {
             </button>
           </div>
         </div>
+
+        {/* 更新完了トースト通知 */}
+        {showUpdateToast && (
+          <div
+            className="animate-pop"
+            style={{
+              position: "fixed",
+              top: "1rem",
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 9999,
+              background: "rgba(16, 185, 129, 0.95)",
+              color: "#fff",
+              padding: "0.5rem 1.2rem",
+              borderRadius: "var(--radius-full)",
+              fontSize: "0.9rem",
+              fontWeight: 900,
+              boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.4rem"
+            }}
+          >
+            <CheckCircle2 size={16} />
+            <span>最新データに更新しました！</span>
+          </div>
+        )}
 
         <h1 className="main-title">ふたりでダイエット</h1>
         <p className="subtitle">
