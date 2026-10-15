@@ -158,6 +158,14 @@
   ],
   "reactions": [
     {
+      "id": "react-1792046274682",
+      "from": "husband",
+      "to": "wife",
+      "stampId": "fire",
+      "timestamp": "2026-10-15T06:37:54.682Z",
+      "message": "脂肪燃焼中！メラメラ"
+    },
+    {
       "id": "react-1792046271251",
       "from": "husband",
       "to": "wife",
@@ -206,5 +214,5 @@
       "message": "サラダ美味しかった！ありがとう❤️"
     }
   ],
-  "updatedAt": "2026-10-15T06:37:51.252Z"
+  "updatedAt": "2026-10-15T06:37:54.682Z"
 }
