@@ -106,7 +106,7 @@ export default function SettingsModal({
           {/* 夫の設定 */}
           <div style={{ padding: "0.9rem", background: "rgba(56, 189, 248, 0.08)", borderRadius: "var(--radius-md)", border: "1.5px solid rgba(56, 189, 248, 0.3)", marginBottom: "0.9rem" }}>
             <div style={{ fontSize: "1.05rem", fontWeight: 900, color: "#38bdf8", marginBottom: "0.6rem" }}>
-              👨‍💻 旦那さんの目標設定
+              👨‍💻 パパの目標設定
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem" }}>
               <div>
@@ -134,7 +134,7 @@ export default function SettingsModal({
           {/* 妻の設定 */}
           <div style={{ padding: "0.9rem", background: "rgba(244, 114, 182, 0.08)", borderRadius: "var(--radius-md)", border: "1.5px solid rgba(244, 114, 182, 0.3)", marginBottom: "1.2rem" }}>
             <div style={{ fontSize: "1.05rem", fontWeight: 900, color: "#f472b6", marginBottom: "0.6rem" }}>
-              👩‍🎨 奥さんの目標設定
+              👩‍🎨 ママの目標設定
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem" }}>
               <div>

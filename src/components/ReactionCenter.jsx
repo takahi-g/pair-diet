@@ -56,12 +56,12 @@ export default function ReactionCenter({ profiles, reactions, onSendReaction }) 
                 border: "none",
                 background: sender === "husband" ? "var(--gradient-husband)" : "rgba(255,255,255,0.08)",
                 color: sender === "husband" ? "#fff" : "var(--text-secondary)",
-                fontSize: "0.9rem",
+                fontSize: "0.95rem",
                 fontWeight: 800,
                 cursor: "pointer"
               }}
             >
-              👨‍💻 旦那さんから
+              👨‍💻 パパから
             </button>
             <button
               type="button"
@@ -72,12 +72,12 @@ export default function ReactionCenter({ profiles, reactions, onSendReaction }) 
                 border: "none",
                 background: sender === "wife" ? "var(--gradient-wife)" : "rgba(255,255,255,0.08)",
                 color: sender === "wife" ? "#fff" : "var(--text-secondary)",
-                fontSize: "0.9rem",
+                fontSize: "0.95rem",
                 fontWeight: 800,
                 cursor: "pointer"
               }}
             >
-              👩‍🎨 奥さんから
+              👩‍🎨 ママから
             </button>
           </div>
         </div>

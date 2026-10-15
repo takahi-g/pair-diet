@@ -18,20 +18,32 @@ import JapanWalkGame from "./components/JapanWalkGame";
 import DietChart from "./components/DietChart";
 import ReactionCenter from "./components/ReactionCenter";
 import SettingsModal from "./components/SettingsModal";
+import EditLogModal from "./components/EditLogModal";
 import { DEFAULT_PROFILES, DEFAULT_LOGS, DEFAULT_REACTIONS } from "./utils/mockData";
 import { fetchDietDataFromGitHub, saveDietDataToGitHub } from "./utils/githubSync";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("dashboard"); // dashboard, record, walk, chart, reactions
   const [showSettings, setShowSettings] = useState(false);
+  const [editingLog, setEditingLog] = useState(null); // タップして編集する対象ログ
   const [dbSyncStatus, setDbSyncStatus] = useState("local"); // local, syncing, success, error
   const isInitialLoad = useRef(true);
 
-  // 1. プロファイル
+  // 1. プロファイル (デフォルトを確実にパパ & ママに)
   const [profiles, setProfiles] = useState(() => {
     try {
       const saved = localStorage.getItem("pair_diet_profiles");
-      return saved ? JSON.parse(saved) : DEFAULT_PROFILES;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.husband && (parsed.husband.name === "旦那さん" || !parsed.husband.name)) {
+          parsed.husband.name = "パパ";
+        }
+        if (parsed.wife && (parsed.wife.name === "奥さん" || !parsed.wife.name)) {
+          parsed.wife.name = "ママ";
+        }
+        return parsed;
+      }
+      return DEFAULT_PROFILES;
     } catch {
       return DEFAULT_PROFILES;
     }
@@ -124,6 +136,20 @@ export default function App() {
     };
     setProfiles(updated);
     syncToCloud(updated, logs, reactions);
+  };
+
+  // 既存記録の更新（タップ編集）
+  const handleUpdateLog = (updatedLog) => {
+    const updatedLogs = logs.map(l => l.id === updatedLog.id ? updatedLog : l);
+    setLogs(updatedLogs);
+    syncToCloud(profiles, updatedLogs, reactions);
+  };
+
+  // 記録の削除
+  const handleDeleteLog = (logId) => {
+    const updatedLogs = logs.filter(l => l.id !== logId);
+    setLogs(updatedLogs);
+    syncToCloud(profiles, updatedLogs, reactions);
   };
 
   // 新規記録の追加
@@ -263,13 +289,13 @@ export default function App() {
         </p>
       </header>
 
-      {/* ナビゲーションタブ */}
+      {/* ナビゲーションタブ（全5タブをスライドさせずに並べて表示） */}
       <nav className="nav-tabs">
         <button
           className={`tab-btn ${activeTab === "dashboard" ? "active" : ""}`}
           onClick={() => setActiveTab("dashboard")}
         >
-          <Users size={18} />
+          <Users size={16} />
           <span>夫婦状況</span>
         </button>
 
@@ -277,7 +303,7 @@ export default function App() {
           className={`tab-btn ${activeTab === "record" ? "active" : ""}`}
           onClick={() => setActiveTab("record")}
         >
-          <PlusCircle size={18} />
+          <PlusCircle size={16} />
           <span>記録する</span>
         </button>
 
@@ -285,7 +311,7 @@ export default function App() {
           className={`tab-btn ${activeTab === "walk" ? "active" : ""}`}
           onClick={() => setActiveTab("walk")}
         >
-          <Footprints size={18} />
+          <Footprints size={16} />
           <span>日本一周</span>
         </button>
 
@@ -293,7 +319,7 @@ export default function App() {
           className={`tab-btn ${activeTab === "chart" ? "active" : ""}`}
           onClick={() => setActiveTab("chart")}
         >
-          <TrendingDown size={18} />
+          <TrendingDown size={16} />
           <span>グラフ</span>
         </button>
 
@@ -301,7 +327,7 @@ export default function App() {
           className={`tab-btn ${activeTab === "reactions" ? "active" : ""}`}
           onClick={() => setActiveTab("reactions")}
         >
-          <MessageSquareHeart size={18} />
+          <MessageSquareHeart size={16} />
           <span>スタンプ</span>
         </button>
       </nav>
@@ -312,7 +338,7 @@ export default function App() {
           <PairDashboard
             profiles={profiles}
             logs={logs}
-            onTogglePrivacy={handleTogglePrivacy}
+            onSelectLogToEdit={(log) => setEditingLog(log)}
           />
         )}
 
@@ -334,6 +360,7 @@ export default function App() {
           <DietChart
             logs={logs}
             profiles={profiles}
+            onSelectLogToEdit={(log) => setEditingLog(log)}
           />
         )}
 
@@ -345,6 +372,17 @@ export default function App() {
           />
         )}
       </main>
+
+      {/* 記録のタップ編集モーダル */}
+      {editingLog && (
+        <EditLogModal
+          log={editingLog}
+          profiles={profiles}
+          onSave={handleUpdateLog}
+          onDelete={handleDeleteLog}
+          onClose={() => setEditingLog(null)}
+        />
+      )}
 
       {/* 設定モーダル */}
       {showSettings && (

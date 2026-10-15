@@ -107,21 +107,18 @@ h1, .main-title {
   line-height: 1.4;
 }
 
-/* Navigation Tabs */
+/* Navigation Tabs (全タブをスライドさせずに一行または折り返しで全部表示) */
 .nav-tabs {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   background: rgba(15, 23, 42, 0.85);
   border: 1px solid var(--border-color);
   padding: 0.35rem;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-lg);
   gap: 0.35rem;
   margin-bottom: 1.25rem;
   backdrop-filter: blur(12px);
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.nav-tabs::-webkit-scrollbar {
-  display: none;
 }
 
 .tab-btn {
@@ -342,13 +339,22 @@ h1, .main-title {
 /* モバイル調整 */
 @media (max-width: 600px) {
   .container {
-    padding: 0.75rem;
+    padding: 0.6rem;
   }
-  h1 {
-    font-size: 1.6rem;
+  .main-title {
+    font-size: 1.45rem !important;
+  }
+  .nav-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.3rem;
+    padding: 0.35rem;
+    border-radius: var(--radius-md);
   }
   .tab-btn {
-    padding: 0.65rem 0.8rem;
-    font-size: 0.9rem;
+    padding: 0.55rem 0.4rem;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    border-radius: var(--radius-sm);
   }
 }

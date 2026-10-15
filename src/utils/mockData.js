@@ -10,18 +10,18 @@ export const STAMPS = [
   { id: "fire", emoji: "🔥", text: "脂肪燃焼中！メラメラ", color: "#f97316" }
 ];
 
-// 夫婦の初期プロファイル設定
+// 夫婦の初期プロファイル設定（パパ & ママ）
 export const DEFAULT_PROFILES = {
   husband: {
-    name: "旦那さん",
+    name: "パパ",
     avatar: "👨‍💻",
     targetWeight: 68.0,
     targetFat: 18.0,
     targetWaist: 82.0,
-    hideRawNumbers: false // 生体重を隠して増減のみ見せる設定
+    hideRawNumbers: false
   },
   wife: {
-    name: "奥さん",
+    name: "ママ",
     avatar: "👩‍🎨",
     targetWeight: 50.0,
     targetFat: 22.0,
