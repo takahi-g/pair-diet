@@ -81,6 +81,14 @@
   ],
   "reactions": [
     {
+      "id": "react-1792041611237",
+      "from": "husband",
+      "to": "wife",
+      "stampId": "fight",
+      "timestamp": "2026-10-15T05:20:11.237Z",
+      "message": "ナイスファイト！"
+    },
+    {
       "id": "react-1",
       "from": "wife",
       "to": "husband",
@@ -96,5 +104,6 @@
       "timestamp": "2026-10-15T03:19:03.314Z",
       "message": "サラダ美味しかった！ありがとう❤️"
     }
-  ]
+  ],
+  "updatedAt": "2026-10-15T05:20:11.238Z"
 }
