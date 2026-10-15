@@ -458,9 +458,20 @@ input[type="date"].input-style {
     width: 100%;
     min-width: 0;
   }
+  .grid-3-inputs label {
+    font-size: 0.78rem !important;
+    white-space: nowrap !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+  }
+  .text-size-large .grid-3-inputs label {
+    font-size: 0.82rem !important;
+    white-space: nowrap !important;
+  }
   .text-size-large .input-style {
     font-size: 1.1rem !important;
-    padding: 0.75rem 0.6rem !important;
+    padding: 0.75rem 0.5rem !important;
   }
 }
 

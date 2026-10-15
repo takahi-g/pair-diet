@@ -109,41 +109,41 @@ export default function RecordForm({ profiles, onAddLog, defaultUser = "wife" })
         </div>
 
         {/* 体重・体脂肪率・ウエスト入力 */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.45rem" }}>
-          <div className="form-group" style={{ minWidth: 0 }}>
-            <label style={{ fontSize: "0.85rem", whiteSpace: "nowrap" }}>体重 (kg)</label>
+        <div className="grid-3-inputs" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.45rem" }}>
+          <div className="form-group" style={{ minWidth: 0, marginBottom: "0.75rem" }}>
+            <label style={{ whiteSpace: "nowrap", textAlign: "center" }}>体重 (kg)</label>
             <input
               type="number"
               step="0.1"
               placeholder="例: 52.8"
               className="input-style"
-              style={{ padding: "0.75rem 0.4rem", textAlign: "center" }}
+              style={{ padding: "0.75rem 0.35rem", textAlign: "center" }}
               value={weight}
               onChange={(e) => setWeight(e.target.value)}
             />
           </div>
 
-          <div className="form-group" style={{ minWidth: 0 }}>
-            <label style={{ fontSize: "0.85rem", whiteSpace: "nowrap" }}>体脂肪率 (%)</label>
+          <div className="form-group" style={{ minWidth: 0, marginBottom: "0.75rem" }}>
+            <label style={{ whiteSpace: "nowrap", textAlign: "center" }}>体脂肪率 (%)</label>
             <input
               type="number"
               step="0.1"
               placeholder="例: 23.5"
               className="input-style"
-              style={{ padding: "0.75rem 0.4rem", textAlign: "center" }}
+              style={{ padding: "0.75rem 0.35rem", textAlign: "center" }}
               value={bodyFat}
               onChange={(e) => setBodyFat(e.target.value)}
             />
           </div>
 
-          <div className="form-group" style={{ minWidth: 0 }}>
-            <label style={{ fontSize: "0.85rem", whiteSpace: "nowrap" }}>ウエスト (cm)</label>
+          <div className="form-group" style={{ minWidth: 0, marginBottom: "0.75rem" }}>
+            <label style={{ whiteSpace: "nowrap", textAlign: "center" }}>ウエスト (cm)</label>
             <input
               type="number"
               step="0.5"
               placeholder="例: 66.5"
               className="input-style"
-              style={{ padding: "0.75rem 0.4rem", textAlign: "center" }}
+              style={{ padding: "0.75rem 0.35rem", textAlign: "center" }}
               value={waist}
               onChange={(e) => setWaist(e.target.value)}
             />
