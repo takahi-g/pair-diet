@@ -178,24 +178,44 @@ export default function PairDashboard({ profiles, logs, onSelectLogToEdit, prima
             justifyContent: "space-between", 
             alignItems: "center", 
             marginTop: "0.85rem", 
-            padding: "0.75rem 1rem", 
+            padding: "0.7rem 0.85rem", 
             background: "rgba(255,255,255,0.06)", 
             borderRadius: "var(--radius-md)", 
-            fontSize: "1rem",
-            cursor: "pointer"
+            fontSize: "0.95rem",
+            cursor: "pointer",
+            gap: "0.5rem",
+            overflow: "hidden"
           }}
         >
-          <div>
-            <span style={{ color: "var(--text-secondary)", fontWeight: 800 }}>今日の歩数: </span>
-            <strong style={{ color: "#38bdf8", fontSize: "1.25rem" }}>{latest.steps ? latest.steps.toLocaleString() : 0} 歩</strong>
+          {/* 歩数は絶対に改行せず一行で表示 */}
+          <div style={{ whiteSpace: "nowrap", flexShrink: 0, display: "flex", alignItems: "baseline", gap: "0.3rem" }}>
+            <span style={{ color: "var(--text-secondary)", fontWeight: 800 }}>今日の歩数:</span>
+            <strong style={{ color: "#38bdf8", fontSize: "1.2rem", fontWeight: 900 }}>
+              {latest.steps ? latest.steps.toLocaleString() : 0}
+            </strong>
+            <span style={{ color: "#38bdf8", fontWeight: 800, fontSize: "0.9rem" }}>歩</span>
           </div>
+
+          {/* メモは空いたスペースに1行で綺麗に収め、長ければ...で省略 */}
           {latest.memo ? (
-            <div style={{ color: "var(--text-primary)", fontWeight: 800, maxWidth: "220px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            <div style={{ 
+              color: "var(--text-primary)", 
+              fontWeight: 700, 
+              fontSize: "0.88rem",
+              overflow: "hidden", 
+              textOverflow: "ellipsis", 
+              whiteSpace: "nowrap",
+              minWidth: 0,
+              textAlign: "right",
+              background: "rgba(255,255,255,0.08)",
+              padding: "0.2rem 0.5rem",
+              borderRadius: "var(--radius-sm)"
+            }}>
               💬 {latest.memo}
             </div>
           ) : (
-            <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>
-              タップでメモ編集 ➔
+            <div style={{ color: "var(--text-muted)", fontSize: "0.825rem", whiteSpace: "nowrap", flexShrink: 0 }}>
+              メモ追加 ➔
             </div>
           )}
         </div>
