@@ -209,34 +209,18 @@ export default function App() {
   // 手動再同期・更新ステート
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // 手動再同期（更新）ボタン
-  const handleManualSync = async () => {
+  // 手動再同期・更新ボタン（ブラウザリロードと同じ効果を持たせる）
+  const handleManualSync = () => {
     setIsUpdating(true);
-    setDbSyncStatus("syncing");
     if (navigator.vibrate) {
       navigator.vibrate(50);
     }
-    const startTime = Date.now();
-    try {
-      const cloudData = await fetchDietDataFromGitHub();
-      if (cloudData) {
-        if (cloudData.profiles) setProfiles(sanitizeProfiles(cloudData.profiles));
-        if (cloudData.logs && Array.isArray(cloudData.logs)) setLogs(cloudData.logs);
-        if (cloudData.reactions && Array.isArray(cloudData.reactions)) setReactions(cloudData.reactions);
-      }
-      setDbSyncStatus("success");
-    } catch (e) {
-      console.warn("手動更新エラー:", e);
-      setDbSyncStatus("error");
-    } finally {
-      // ユーザーが更新されたことをしっかり視認できるように最低600msは回転を表示
-      const elapsed = Date.now() - startTime;
-      const waitTime = Math.max(0, 600 - elapsed);
-      setTimeout(() => {
-        setIsUpdating(false);
-        showToast("最新データに更新しました！");
-      }, waitTime);
-    }
+    // トーストを表示し、少しだけ回転を見せてからブラウザを完全リロード
+    showToast("最新データを読み込んでいます...");
+    setTimeout(() => {
+      // キャッシュをバイパスしてページ全体を完全リロード
+      window.location.reload(true);
+    }, 350);
   };
 
   // 文字サイズ設定 (largeをデフォルトにして老眼でも見やすく)
