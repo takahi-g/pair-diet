@@ -199,7 +199,7 @@ export default function App() {
     try {
       const cloudData = await fetchDietDataFromGitHub();
       if (cloudData) {
-        if (cloudData.profiles) setProfiles(cloudData.profiles);
+        if (cloudData.profiles) setProfiles(sanitizeProfiles(cloudData.profiles));
         if (cloudData.logs && Array.isArray(cloudData.logs)) setLogs(cloudData.logs);
         if (cloudData.reactions && Array.isArray(cloudData.reactions)) setReactions(cloudData.reactions);
       }

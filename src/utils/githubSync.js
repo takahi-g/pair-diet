@@ -16,21 +16,46 @@ const getPAT = () => {
 };
 
 /**
- * GitHub から db.json を取得する
+ * GitHub API の contents エンドポイントから最新の db.json を直接取得する
+ * (raw.githubusercontent.com は最大5分間キャッシュされるため、即時取得には contents API を使用)
  */
 export const fetchDietDataFromGitHub = async () => {
   try {
-    const res = await fetch(`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${FILE_PATH}?t=${Date.now()}`);
+    const token = getPAT();
+    const res = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}?t=${Date.now()}`, {
+      headers: {
+        Authorization: `token ${token}`,
+        Accept: "application/vnd.github.v3+json"
+      }
+    });
+
     if (res.status === 404) {
-      return null; // 初回等でファイルがまだない場合
+      return null;
     }
     if (!res.ok) {
       throw new Error(`GitHub fetch failed: ${res.status}`);
     }
-    const data = await res.json();
+
+    const fileData = await res.json();
+    if (!fileData.content) {
+      return null;
+    }
+
+    // Base64 デコード (日本語対応)
+    const jsonStr = decodeURIComponent(escape(atob(fileData.content.replace(/\s/g, ''))));
+    const data = JSON.parse(jsonStr);
     return data;
   } catch (err) {
-    console.error("fetchDietDataFromGitHub error:", err);
+    console.error("fetchDietDataFromGitHub API error, fallback to raw:", err);
+    // フォールバック: raw から取得
+    try {
+      const fallbackRes = await fetch(`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${FILE_PATH}?t=${Date.now()}`);
+      if (fallbackRes.ok) {
+        return await fallbackRes.json();
+      }
+    } catch (fallbackErr) {
+      console.error("Fallback failed:", fallbackErr);
+    }
     throw err;
   }
 };
@@ -45,9 +70,10 @@ export const saveDietDataToGitHub = async (payload) => {
     // 1. 既存ファイルの sha を取得（存在する場合）
     let sha = null;
     try {
-      const getFileRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
+      const getFileRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}?t=${Date.now()}`, {
         headers: {
-          Authorization: `token ${token}`
+          Authorization: `token ${token}`,
+          Accept: "application/vnd.github.v3+json"
         }
       });
       if (getFileRes.ok) {
@@ -74,7 +100,8 @@ export const saveDietDataToGitHub = async (payload) => {
       method: "PUT",
       headers: {
         Authorization: `token ${token}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        Accept: "application/vnd.github.v3+json"
       },
       body: JSON.stringify(bodyObj)
     });
