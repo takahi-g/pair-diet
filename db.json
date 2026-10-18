@@ -19,6 +19,17 @@
   },
   "logs": [
     {
+      "id": "log-1792366699363",
+      "date": "2026-10-18",
+      "user": "husband",
+      "weight": 75.9,
+      "bodyFat": 28,
+      "waist": 98,
+      "steps": 0,
+      "memo": "",
+      "createdAt": "2026-10-18T23:38:19.363Z"
+    },
+    {
       "id": "log-1792366697103",
       "date": "2026-10-18",
       "user": "husband",
@@ -64,5 +75,5 @@
     }
   ],
   "reactions": [],
-  "updatedAt": "2026-10-18T23:38:17.104Z"
+  "updatedAt": "2026-10-18T23:38:19.363Z"
 }
